@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Supermercado Familiar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn.shopping-mode {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .category {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid;
+        }
+
+        .category.dairy { border-left-color: #ffd93d; }
+        .category.meat { border-left-color: #ff6b6b; }
+        .category.vegetables { border-left-color: #4ecdc4; }
+        .category.fruits { border-left-color: #45b7d1; }
+        .category.grains { border-left-color: #f9ca24; }
+        .category.beverages { border-left-color: #6c5ce7; }
+        .category.cleaning { border-left-color: #a29bfe; }
+        .category.others { border-left-color: #fd79a8; }
+
+        .category h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .item.completed {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-color: #11998e;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .item-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .item-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .item-status {
+            font-size: 1.5rem;
+        }
+
+        .add-custom-item {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-custom-item input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+        }
+
+        .add-custom-item button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .saved-lists {
+            display: grid;
+            gap: 20px;
+        }
+
+        .saved-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .saved-list:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .saved-list h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .saved-list-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .saved-list-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .saved-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .saved-item.completed {
+            background: #d4edda;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .list-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .delete-list-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .shop-list-btn {
+            background: #ff9a56;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .shopping-header {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .shopping-progress {
+            margin: 15px 0;
+        }
+
+        .shopping-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                justify-content: center;
+            }
+            
+            .shopping-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Lista de Supermercado Familia con orejas</h1>
+            <p>Organizar compras de supermercado para no olvidarse de NADA!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="nav-buttons">
+                <button class="btn active" onclick="showSection('new-list')">📝 Nueva Lista</button>
+                <button class="btn" onclick="showSection('saved-lists')">📋 Listas Guardadas</button>
+            </div>
+
+            <!-- Nueva Lista -->
+            <div id="new-list" class="section active">
+                <div class="form-group">
+                    <label for="list-name">Nombre de la lista:</label>
+                    <input type="text" id="list-name" placeholder="Ej: Lista quincenal, Compra para el asado...">
+                </div>
+
+                <div class="form-group">
+                    <label for="list-date">Fecha:</label>
+                    <input type="date" id="list-date">
+                </div>
+
+                <div class="categories" id="categories-container">
+                    <!-- Las categorías se generarán dinámicamente -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn" onclick="saveList()" style="font-size: 1.2rem; padding: 15px 30px;">
+                        💾 Guardar Lista
+                    </button>
+                </div>
+            </div>
+
+            <!-- Listas Guardadas -->
+            <div id="saved-lists" class="section">
+                <div id="saved-lists-container">
+                    <!-- Las listas guardadas se mostrarán aquí -->
+                </div>
+            </div>
+
+            <!-- Modo Compra -->
+            <div id="shopping-mode" class="section">
+                <div class="shopping-header">
+                    <h2 id="shopping-list-name">🛒 Modo Compra</h2>
+                    <div class="shopping-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="shopping-progress"></div>
+                        </div>
+                    </div>
+                    <div class="shopping-stats">
+                        <div class="stat">
+                            <span class="stat-number" id="completed-count">0</span>
+                            <span class="stat-label">Completados</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="remaining-count">0</span>
+                            <span class="stat-label">Pendientes</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="progress-percent">0%</span>
+                            <span class="stat-label">Progreso</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="categories" id="shopping-categories-container">
+                    <!-- Las categorías para modo compra se generarán aquí -->
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn" onclick="finishShopping()" style="background: #28a745; font-size: 1.2rem; padding: 15px 30px;">
+                        ✅ Finalizar Compra
+                    </button>
+                    <button class="btn" onclick="exitShoppingMode()" style="background: #6c757d; margin-left: 15px;">
+                        ← Volver a Listas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentListData = {};
+        let customItems = {};
+        let currentShoppingList = null;
+        let shoppingMode = false;
+        let savedLists = [];
+
+        // Productos base organizados por categorías
+        const baseProducts = {
+            dairy: {
+                name: "🥛 Lácteos",
+                items: ["Leche", "Queso", "Yogur", "Mantequilla", "Crema", "Queso crema"]
+            },
+            meat: {
+                name: "🥩 Carnes y Pescados",
+                items: ["Pollo", "Carne de res", "Cerdo", "Pescado", "Embutidos", "Huevos"]
+            },
+            vegetables: {
+                name: "🥬 Verduras",
+                items: ["Lechuga", "Tomates", "Cebollas", "Papas", "Zanahorias", "Apio", "Pimientos"]
+            },
+            fruits: {
+                name: "🍎 Frutas",
+                items: ["Manzanas", "Plátanos", "Naranjas", "Limones", "Fresas", "Uvas"]
+            },
+            grains: {
+                name: "🌾 Cereales y Granos",
+                items: ["Arroz", "Pan", "Pasta", "Avena", "Quinoa", "Harina"]
+            },
+            beverages: {
+                name: "🥤 Bebidas",
+                items: ["Agua", "Jugos", "Refrescos", "Café", "Té", "Cerveza"]
+            },
+            cleaning: {
+                name: "🧽 Limpieza",
+                items: ["Detergente", "Jabón", "Papel higiénico", "Toallas de papel", "Desinfectante"]
+            },
+            others: {
+                name: "🏪 Otros",
+                items: ["Aceite", "Sal", "Azúcar", "Especias", "Snacks", "Medicinas"]
+            }
+        };
+
+        // Inicializar la aplicación
+        function init() {
+            setTodayDate();
+            generateCategories();
+            loadSavedLists();
+        }
+
+        // Funciones de almacenamiento local (usando variables en memoria)
+        const storage = {};
+
+        function getSavedData(key) {
+            return storage[key] || JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function saveData(key, value) {
+            storage[key] = value;
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('list-date').value = today;
+        }
+
+        function generateCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            Object.keys(baseProducts).forEach(categoryKey => {
+                const category = baseProducts[categoryKey];
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category ${categoryKey}`;
+                
+                let itemsHTML = '';
+                category.items.forEach(item => {
+                    const itemId = `${categoryKey}-${item.replace(/\s+/g, '-')}`;
+                    itemsHTML += `
+                        <div class="item" onclick="toggleItem('${categoryKey}', '${item}')">
+                            <input type="checkbox" class="item-checkbox" id="${itemId}">
+                            <span class="item-name">${item}</span>
+                            <span class="item-status">📦</span>
+                        </div>
+                    `;
+                });
+                
+                categoryDiv.innerHTML = `
+                    <h3>${category.name}</h3>
+                    ${itemsHTML}
+                    <div class="add-custom-item">
+                        <input type="text" placeholder="Agregar artículo personalizado..." id="custom-${categoryKey}">
+                        <button onclick="addCustomItem('${categoryKey}')">➕</button>
+                    </div>
+                `;
+                
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function toggleItem(category, item) {
+            if (!currentListData[category]) {
+                currentListData[category] = {};
+            }
+            
+            currentListData[category][item] = !currentListData[category][item];
+            updateItemVisual(category, item);
+        }
+
+        function updateItemVisual(category, item) {
+            const itemId = `${category}-${item.replace(/\s+/g, '-')}`;
+            const checkbox = document.getElementById(itemId);
+            if (!checkbox) return;
+            
+            const itemDiv = checkbox.parentElement;
+            
+            if (currentListData[category] && currentListData[category][item]) {
+                itemDiv.classList.add('selected');
+                checkbox.checked = true;
+            } else {
+                itemDiv.classList.remove('selected');
+                checkbox.checked = false;
+            }
+        }
+
+        function addCustomItem(category) {
+            const input = document.getElementById(`custom-${category}`);
+            const itemName = input.value.trim();
+            
+            if (itemName) {
+                if (!customItems[category]) {
+                    customItems[category] = [];
+                }
+                
+                if (!customItems[category].includes(itemName)) {
+                    customItems[category].push(itemName);
+                    
+                    // Agregar al DOM
+                    const categoryDiv = input.parentElement.parentElement;
+                    const addCustomDiv = input.parentElement;
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    itemDiv.onclick = () => toggleItem(category, itemName);
+                    itemDiv.innerHTML = `
+                        <input type="checkbox" class="item-checkbox" id="${category}-${itemName.replace(/\s+/g, '-')}">
+                        <span class="item-name">${itemName}</span>
+                        <span class="item-status">📦</span>
+                    `;
+                    
+                    categoryDiv.insertBefore(itemDiv, addCustomDiv);
+                    input.value = '';
+                }
+            }
+        }
+
+        function saveList() {
+            const listName = document.getElementById('list-name').value.trim();
+            const listDate = document.getElementById('list-date').value;
+            
+            if (!listName) {
+                alert('Por favor, ingresa un nombre para la lista.');
+                return;
+            }
+            
+            // Contar items seleccionados
+            let selectedCount = 0;
+            let totalCount = 0;
+            
+            Object.keys(baseProducts).forEach(categoryKey => {
+                baseProducts[categoryKey].items.forEach(item => {
+                    totalCount++;
+                    if (currentListData[categoryKey] && currentListData[categoryKey][item]) {
+                        selectedCount++;
+                    }
+                });
+                
+                if (customItems[categoryKey]) {
+                    customItems[categoryKey].forEach(item => {
+                        totalCount++;
+                        if (currentListData[categoryKey] && currentListData[categoryKey][item]) {
+                            selectedCount++;
+                        }
+                    });
+                }
+            });
+            
+            if (selectedCount === 0) {
+                alert('Por favor, selecciona al menos un artículo.');
+                return;
+            }
+            
+            const listData = {
+                id: Date.now(),
+                name: listName,
+                date: listDate,
+                items: { ...currentListData },
+                customItems: { ...customItems },
+                selectedCount,
+                totalCount,
+                completedItems: {},
+                isCompleted: false
+            };
+            
+            // Guardar localmente
+            savedLists = getSavedData('shopping_lists');
+            savedLists.push(listData);
+            saveData('shopping_lists', savedLists);
+            
+            // Limpiar formulario
+            clearForm();
+            
+            // Mostrar listas guardadas
+            showSection('saved-lists');
+            loadSavedLists();
+            
+            alert('Lista guardada exitosamente!');
+        }
+
+        function clearForm() {
+            document.getElementById('list-name').value = '';
+            setTodayDate();
+            currentListData = {};
+            customItems = {};
+            generateCategories();
+        }
+
+        function loadSavedLists() {
+            savedLists = getSavedData('shopping_lists');
+            displaySavedLists();
+        }
+
+        function displaySavedLists() {
+            const container = document.getElementById('saved-lists-container');
+            
+            if (savedLists.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No hay listas guardadas</h3>
+                        <p>Crea tu primera lista de compras</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = savedLists.map(list => {
+                const completedCount = Object.keys(list.completedItems || {}).length;
+                const progressPercent = list.selectedCount > 0 ? (completedCount / list.selectedCount * 100) : 0;
+                
+                // Generar vista previa de items
+                let itemsPreview = '';
+                Object.keys(list.items).forEach(category => {
+                    Object.keys(list.items[category]).forEach(item => {
+                        if (list.items[category][item]) {
+                            const isCompleted = list.completedItems && list.completedItems[`${category}-${item}`];
+                            itemsPreview += `
+                                <div class="saved-item ${isCompleted ? 'completed' : ''}">
+                                    <span>${isCompleted ? '✅' : '📦'}</span>
+                                    <span>${item}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                });
+                
+                return `
+                    <div class="saved-list">
+                        <h3>${list.name}</h3>
+                        <div class="saved-list-meta">
+                            📅 ${new Date(list.date).toLocaleDateString('es-ES')} • 
+                            ${list.selectedCount} artículos • 
+                            ${completedCount} completados
+                            ${list.isCompleted ? ' • ✅ Completada' : ''}
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                        </div>
+                        <div class="saved-list-items">${itemsPreview}</div>
+                        <div class="list-actions">
+                            <button class="shop-list-btn" onclick="startShopping(${list.id})" ${list.isCompleted ? 'disabled' : ''}>
+                                🛒 ${list.isCompleted ? 'Completada' : 'Ir de Compras'}
+                            </button>
+                            <button class="delete-list-btn" onclick="deleteList(${list.id})">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteList(listId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
+                savedLists = savedLists.filter(list => list.id !== listId);
+                saveData('shopping_lists', savedLists);
+                displaySavedLists();
+            }
+        }
+
+        function startShopping(listId) {
+            currentShoppingList = savedLists.find(list => list.id === listId);
+            if (!currentShoppingList) return;
+            
+            shoppingMode = true;
+            showSection('shopping-mode');
+            generateShoppingCategories();
+            updateShoppingProgress();
+            
+            // Actualizar navegación
+            const navButtons = document.querySelector('.nav-buttons');
+            navButtons.innerHTML = `
+                <button class="btn shopping-mode active" onclick="showSection('shopping-mode')">🛒 Modo Compra</button>
+                <button class="btn" onclick="exitShoppingMode()">📋 Volver a Listas</button>
+            `;
+        }
+
+        function generateShoppingCategories() {
+            const container = document.getElementById('shopping-categories-container');
+            container.innerHTML = '';
+            
+            document.getElementById('shopping-list-name').textContent = `🛒 ${currentShoppingList.name}`;
+            
+            Object.keys(baseProducts).forEach(categoryKey => {
+                const category = baseProducts[categoryKey];
+                const categoryItems = [];
+                
+                // Agregar items base
+                category.items.forEach(item => {
+                    if (currentShoppingList.items[categoryKey] && currentShoppingList.items[categoryKey][item]) {
+                        categoryItems.push(item);
+                    }
+                });
+                
+                // Agregar items personalizados
+                if (currentShoppingList.customItems[categoryKey]) {
+                    currentShoppingList.customItems[categoryKey].forEach(item => {
+                        if (currentShoppingList.items[categoryKey] && currentShoppingList.items[categoryKey][item]) {
+                            categoryItems.push(item);
+                        }
+                    });
+                }
+                
+                if (categoryItems.length > 0) {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = `category ${categoryKey}`;
+                    
+                    let itemsHTML = '';
+                    categoryItems.forEach(item => {
+                        const itemKey = `${categoryKey}-${item}`;
+                        const isCompleted = currentShoppingList.completedItems && currentShoppingList.completedItems[itemKey];
+                        
+                        itemsHTML += `
+                            <div class="item ${isCompleted ? 'completed' : ''}" onclick="toggleShoppingItem('${categoryKey}', '${item}')">
+                                <input type="checkbox" class="item-checkbox" ${isCompleted ? 'checked' : ''}>
+                                <span class="item-name">${item}</span>
+                                <span class="item-status">${isCompleted ? '✅' : '📦'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    categoryDiv.innerHTML = `
+                        <h3>${category.name}</h3>
+                        ${itemsHTML}
+                    `;
+                    
+                    container.appendChild(categoryDiv);
+                }
+            });
+        }
+
+        function toggleShoppingItem(category, item) {
+            const itemKey = `${category}-${item}`;
+            
+            if (!currentShoppingList.completedItems) {
+                currentShoppingList.completedItems = {};
+            }
+            
+            currentShoppingList.completedItems[itemKey] = !currentShoppingList.completedItems[itemKey];
+            
+            // Actualizar visualmente
+            updateShoppingItemVisual(category, item);
+            updateShoppingProgress();
+            
+            // Actualizar lista guardada
+            const listIndex = savedLists.findIndex(list => list.id === currentShoppingList.id);
+            if (listIndex !== -1) {
+                savedLists[listIndex] = currentShoppingList;
+                saveData('shopping_lists', savedLists);
+            }
+        }
+
+        function updateShoppingItemVisual(category, item) {
+            const itemKey = `${category}-${item}`;
+            const items = document.querySelectorAll(`[onclick*="${category}"][onclick*="${item}"]`);
+            
+            items.forEach(itemDiv => {
+                const checkbox = itemDiv.querySelector('.item-checkbox');
+                const statusSpan = itemDiv.querySelector('.item-status');
+                
+                if (currentShoppingList.completedItems[itemKey]) {
+                    itemDiv.classList.add('completed');
+                    checkbox.checked = true;
+                    statusSpan.textContent = '✅';
+                } else {
+                    itemDiv.classList.remove('completed');
+                    checkbox.checked = false;
+                    statusSpan.textContent = '📦';
+                }
+            });
+        }
+
+        function updateShoppingProgress() {
+            const completedCount = Object.values(currentShoppingList.completedItems || {}).filter(Boolean).length;
+            const totalCount = currentShoppingList.selectedCount;
+            const progressPercent = totalCount > 0 ? (completedCount / totalCount * 100) : 0;
+            
+            document.getElementById('completed-count').textContent = completedCount;
+            document.getElementById('remaining-count').textContent = totalCount - completedCount;
+            document.getElementById('progress-percent').textContent = Math.round(progressPercent) + '%';
+            document.getElementById('shopping-progress').style.width = progressPercent + '%';
+        }
+
+        function finishShopping() {
+            const completedCount = Object.values(currentShoppingList.completedItems || {}).filter(Boolean).length;
+            const totalCount = currentShoppingList.selectedCount;
+            
+            if (completedCount < totalCount) {
+                const remaining = totalCount - completedCount;
+                if (!confirm(`Aún tienes ${remaining} artículos pendientes. ¿Quieres finalizar la compra de todas formas?`)) {
+                    return;
+                }
+            }
+            
+            // Marcar lista como completada
+            currentShoppingList.isCompleted = true;
+            
+            // Actualizar lista guardada
+            const listIndex = savedLists.findIndex(list => list.id === currentShoppingList.id);
+            if (listIndex !== -1) {
+                savedLists[listIndex] = currentShoppingList;
+                saveData('shopping_lists', savedLists);
+            }
+            
+            alert('¡Compra finalizada exitosamente!');
+            exitShoppingMode();
+        }
+
+        function exitShoppingMode() {
+            shoppingMode = false;
+            currentShoppingList = null;
+            
+            // Restaurar navegación normal
+            const navButtons = document.querySelector('.nav-buttons');
+            navButtons.innerHTML = `
+                <button class="btn active" onclick="showSection('saved-lists')">📋 Listas Guardadas</button>
+                <button class="btn" onclick="showSection('new-list')">📝 Nueva Lista</button>
+            `;
+            
+            showSection('saved-lists');
+            loadSavedLists();
+        }
+
+        function showSection(sectionName) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar sección seleccionada
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Actualizar botones de navegación
+            document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Activar botón correspondiente
+            if (!shoppingMode) {
+                const activeBtn = Array.from(document.querySelectorAll('.nav-buttons .btn')).find(btn => 
+                    btn.onclick && btn.onclick.toString().includes(sectionName)
+                );
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+        }
+
+        // Event listeners para teclas de acceso rápido
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (!shoppingMode && document.getElementById('new-list').classList.contains('active')) {
+                    saveList();
+                }
+            }
+            
+            if (e.key === 'Escape' && shoppingMode) {
+                exitShoppingMode();
+            }
+        });
+
+        // Event listeners para inputs personalizados
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('custom-')) {
+                const category = e.target.id.replace('custom-', '');
+                addCustomItem(category);
+            }
+        });
+
+        // Inicializar aplicación cuando se carga la página
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Función para manejar cambios en checkboxes
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('item-checkbox')) {
+                const itemDiv = e.target.parentElement;
+                const onclick = itemDiv.getAttribute('onclick');
+                if (onclick) {
+                    eval(onclick);
+                }
+            }
+        });
+
+        // Función de búsqueda (opcional para futuras mejoras)
+        function searchItems(query) {
+            const items = document.querySelectorAll('.item');
+            items.forEach(item => {
+                const itemName = item.querySelector('.item-name').textContent.toLowerCase();
+                if (itemName.includes(query.toLowerCase())) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Funciones de exportación (para futuras mejoras)
+        function exportList(listId) {
+            const list = savedLists.find(l => l.id === listId);
+            if (!list) return;
+            
+            let exportText = `Lista de Compras: ${list.name}\n`;
+            exportText += `Fecha: ${new Date(list.date).toLocaleDateString('es-ES')}\n\n`;
+            
+            Object.keys(list.items).forEach(category => {
+                const categoryName = baseProducts[category].name;
+                let categoryItems = [];
+                
+                Object.keys(list.items[category]).forEach(item => {
+                    if (list.items[category][item]) {
+                        const isCompleted = list.completedItems && list.completedItems[`${category}-${item}`];
+                        categoryItems.push(`${isCompleted ? '✅' : '☐'} ${item}`);
+                    }
+                });
+                
+                if (categoryItems.length > 0) {
+                    exportText += `${categoryName}\n`;
+                    exportText += categoryItems.join('\n') + '\n\n';
+                }
+            });
+            
+            // Crear y descargar archivo
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${list.name.replace(/[^a-z0-9]/gi, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
