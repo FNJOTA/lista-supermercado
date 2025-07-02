@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Lista de Supermercado Familiar</title>
@@ -48,6 +49,26 @@
         .header p {
             font-size: 0.95rem;
             opacity: 0.9;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+
+        .status-indicator.disconnected {
+            background: #dc3545;
         }
 
         .main-content {
@@ -114,7 +135,7 @@
             font-size: 0.95rem;
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 14px 12px;
             border: 2px solid #e1e5e9;
@@ -125,7 +146,7 @@
             appearance: none;
         }
 
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -418,6 +439,12 @@
             transform: scale(0.95);
         }
 
+        .save-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .finish-shopping-container {
             text-align: center;
             margin-top: 25px;
@@ -454,7 +481,43 @@
             transform: scale(0.95);
         }
 
-        /* Mejoras específicas para Android */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .realtime-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .pulse {
+            width: 6px;
+            height: 6px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 1; }
+            70% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        /* Responsive */
         @media screen and (max-width: 480px) {
             body {
                 padding: 5px;
@@ -522,112 +585,21 @@
                 min-width: auto;
             }
         }
-
-        /* Mejoras para pantallas muy pequeñas */
-        @media screen and (max-width: 360px) {
-            .header {
-                padding: 15px 10px;
-            }
-
-            .header h1 {
-                font-size: 1.4rem;
-            }
-
-            .header p {
-                font-size: 0.85rem;
-            }
-
-            .main-content {
-                padding: 10px;
-            }
-
-            .btn {
-                padding: 10px 16px;
-                font-size: 0.85rem;
-            }
-
-            .form-group input {
-                padding: 12px 10px;
-            }
-
-            .category {
-                padding: 10px;
-            }
-
-            .item {
-                padding: 8px;
-                min-height: 40px;
-            }
-
-            .item-name {
-                font-size: 0.85rem;
-            }
-
-            .shopping-header {
-                padding: 12px;
-            }
-
-            .shopping-header h2 {
-                font-size: 1.1rem;
-            }
-        }
-
-        /* Orientación landscape en móviles */
-        @media screen and (max-height: 600px) and (orientation: landscape) {
-            .header {
-                padding: 10px 15px;
-            }
-
-            .header h1 {
-                font-size: 1.3rem;
-                margin-bottom: 5px;
-            }
-
-            .main-content {
-                padding: 10px;
-            }
-
-            .categories {
-                gap: 12px;
-            }
-
-            .category {
-                padding: 10px;
-            }
-
-            .shopping-header {
-                padding: 10px;
-            }
-
-            .save-button, .finish-shopping-btn {
-                padding: 12px 25px;
-                font-size: 1rem;
-            }
-        }
-
-        /* Estilos para mejorar la accesibilidad táctil */
-        .touchable {
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        /* Evitar zoom en inputs en iOS */
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-            select, textarea, input[type="text"], input[type="password"], 
-            input[type="datetime"], input[type="datetime-local"], 
-            input[type="date"], input[type="month"], input[type="time"], 
-            input[type="week"], input[type="number"], input[type="email"], 
-            input[type="url"], input[type="search"], input[type="tel"] {
-                font-size: 16px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛒 Lista de Supermercado Familia con orejas</h1>
+            <h1>🛒 Lista de Supermercado Familiar</h1>
             <p>Organizar compras de supermercado para no olvidarse de NADA!</p>
+            <div class="connection-status">
+                <div class="status-indicator" id="connection-status"></div>
+                <span id="connection-text">Conectando...</span>
+                <div class="realtime-indicator">
+                    <div class="pulse"></div>
+                    <span>En tiempo real</span>
+                </div>
+            </div>
         </div>
 
         <div class="main-content">
@@ -644,6 +616,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="family-member">Creada por:</label>
+                    <select id="family-member">
+                        <option value="Papá">👨 Papá</option>
+                        <option value="Mamá">👩 Mamá</option>
+                        <option value="Hijo/a 1">👦 Hijo/a 1</option>
+                        <option value="Hijo/a 2">👧 Hijo/a 2</option>
+                        <option value="Otro">👤 Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="list-date">Fecha:</label>
                     <input type="date" id="list-date">
                 </div>
@@ -653,7 +636,7 @@
                 </div>
 
                 <div class="save-button-container">
-                    <button class="save-button touchable" onclick="saveList()">
+                    <button class="save-button touchable" onclick="saveList()" id="save-btn">
                         💾 Guardar Lista
                     </button>
                 </div>
@@ -707,7 +690,20 @@
         </div>
     </div>
 
+    <!-- Supabase JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.0/umd/index.min.js"></script>
+    
     <script>
+        // CONFIGURACIÓN DE SUPABASE
+        // ⚠️ IMPORTANTE: Reemplaza estos valores con tu configuración real de Supabase
+        const SUPABASE_URL = 'https://fkbibznxasdkzrrqecul.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYmliem54YXNka3pycnFlY3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MTUxNDcsImV4cCI6MjA2Njk5MTE0N30.usnm1yQ3dWdjvUHPW3YZmL3WQQJyp6lD3ot8IqmpSwA';
+        
+        // Inicializar Supabase
+        let supabase = null;
+        let isConnected = false;
+        let realTimeSubscription = null;
+
         // Variables globales
         let currentListData = {};
         let customItems = {};
@@ -751,23 +747,148 @@
             }
         };
 
-        // Inicializar la aplicación
-        function init() {
+        // Funciones de Supabase
+        async function initSupabase() {
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY || 
+                SUPABASE_URL === 'TU_SUPABASE_URL_AQUI' || 
+                SUPABASE_ANON_KEY === 'TU_SUPABASE_ANON_KEY_AQUI') {
+                updateConnectionStatus(false, 'Configurar Supabase');
+                console.error('Por favor, configura tu URL y clave de Supabase');
+                return;
+            }
+
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Verificar conexión
+                const { data, error } = await supabase.from('shopping_lists').select('count').limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                isConnected = true;
+                updateConnectionStatus(true, 'Conectado');
+                setupRealTimeSubscription();
+                
+            } catch (error) {
+                console.error('Error conectando con Supabase:', error);
+                updateConnectionStatus(false, 'Error de conexión');
+                isConnected = false;
+            }
+        }
+
+        function updateConnectionStatus(connected, message) {
+            const indicator = document.getElementById('connection-status');
+            const text = document.getElementById('connection-text');
+            
+            if (connected) {
+                indicator.classList.remove('disconnected');
+                text.textContent = message;
+            } else {
+                indicator.classList.add('disconnected');
+                text.textContent = message;
+            }
+        }
+
+        function setupRealTimeSubscription() {
+            if (!supabase || !isConnected) return;
+
+            realTimeSubscription = supabase
+                .channel('shopping_lists_changes')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'shopping_lists' },
+                    (payload) => {
+                        console.log('Cambio detectado:', payload);
+                        loadSavedLists(); // Recargar listas cuando hay cambios
+                        
+                        // Si estamos en modo compra y la lista actual cambió
+                        if (shoppingMode && currentShoppingList && 
+                            payload.new && payload.new.id === currentShoppingList.id) {
+                            currentShoppingList = payload.new;
+                            generateShoppingCategories();
+                            updateShoppingProgress();
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        // Funciones CRUD para Supabase
+        async function saveListToSupabase(listData) {
+            if (!supabase || !isConnected) {
+                throw new Error('No hay conexión con Supabase');
+            }
+
+            const { data, error } = await supabase
+                .from('shopping_lists')
+                .insert([listData])
+                .select();
+
+            if (error) {
+                throw error;
+            }
+
+            return data[0];
+        }
+
+        async function loadListsFromSupabase() {
+            if (!supabase || !isConnected) {
+                return [];
+            }
+
+            const { data, error } = await supabase
+                .from('shopping_lists')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error cargando listas:', error);
+                return [];
+            }
+
+            return data || [];
+        }
+
+        async function updateListInSupabase(listId, updates) {
+            if (!supabase || !isConnected) {
+                throw new Error('No hay conexión con Supabase');
+            }
+
+            const { data, error } = await supabase
+                .from('shopping_lists')
+                .update(updates)
+                .eq('id', listId)
+                .select();
+
+            if (error) {
+                throw error;
+            }
+
+            return data[0];
+        }
+
+        async function deleteListFromSupabase(listId) {
+            if (!supabase || !isConnected) {
+                throw new Error('No hay conexión con Supabase');
+            }
+
+            const { error } = await supabase
+                .from('shopping_lists')
+                .delete()
+                .eq('id', listId);
+
+            if (error) {
+                throw error;
+            }
+        }
+
+        // Funciones principales
+        async function init() {
             setTodayDate();
             generateCategories();
-            loadSavedLists();
-        }
-
-        // Funciones de almacenamiento local (usando variables en memoria)
-        const storage = {};
-
-        function getSavedData(key) {
-            return storage[key] || JSON.parse(localStorage.getItem(key) || '[]');
-        }
-
-        function saveData(key, value) {
-            storage[key] = value;
-            localStorage.setItem(key, JSON.stringify(value));
+            await initSupabase();
+            await loadSavedLists();
         }
 
         function setTodayDate() {
@@ -845,324 +966,415 @@
                 
                 if (!customItems[category].includes(itemName)) {
                     customItems[category].push(itemName);
-                    
-                    // Agregar al DOM
-                    const categoryDiv = input.parentElement.parentElement;
-                    const addCustomDiv = input.parentElement;
-                    
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'item touchable';
-                    itemDiv.onclick = () => toggleItem(category, itemName);
-                    itemDiv.innerHTML = `
-                        <input type="checkbox" class="item-checkbox" id="${category}-${itemName.replace(/\s+/g, '-')}">
-                        <span class="item-name">${itemName}</span>
-                        <span class="item-status">📦</span>
-                    `;
-                    
-                    categoryDiv.insertBefore(itemDiv, addCustomDiv);
+                    addCustomItemToCategory(category, itemName);
                     input.value = '';
                 }
             }
         }
 
-        function saveList() {
+        function addCustomItemToCategory(category, itemName) {
+            const categoryDiv = document.querySelector(`.category.${category}`);
+            const addCustomDiv = categoryDiv.querySelector('.add-custom-item');
+            
+            const itemId = `${category}-${itemName.replace(/\s+/g, '-')}`;
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'item touchable';
+            itemDiv.onclick = () => toggleItem(category, itemName);
+            
+            itemDiv.innerHTML = `
+                <input type="checkbox" class="item-checkbox" id="${itemId}">
+                <span class="item-name">${itemName}</span>
+                <span class="item-status">📦</span>
+            `;
+            
+            categoryDiv.insertBefore(itemDiv, addCustomDiv);
+        }
+
+        async function saveList() {
             const listName = document.getElementById('list-name').value.trim();
+            const familyMember = document.getElementById('family-member').value;
             const listDate = document.getElementById('list-date').value;
             
             if (!listName) {
-                alert('Por favor, ingresa un nombre para la lista.');
+                alert('Por favor, ingresa un nombre para la lista');
                 return;
             }
             
-            // Contar items seleccionados
-            let selectedCount = 0;
-            let totalCount = 0;
+            // Recopilar todos los items seleccionados
+            const selectedItems = {};
+            let totalItems = 0;
             
-            Object.keys(baseProducts).forEach(categoryKey => {
-                baseProducts[categoryKey].items.forEach(item => {
-                    totalCount++;
-                    if (currentListData[categoryKey] && currentListData[categoryKey][item]) {
-                        selectedCount++;
+            Object.keys(currentListData).forEach(category => {
+                Object.keys(currentListData[category]).forEach(item => {
+                    if (currentListData[category][item]) {
+                        if (!selectedItems[category]) {
+                            selectedItems[category] = {};
+                        }
+                        selectedItems[category][item] = {
+                            selected: true,
+                            completed: false
+                        };
+                        totalItems++;
                     }
                 });
-                
-                if (customItems[categoryKey]) {
-                    customItems[categoryKey].forEach(item => {
-                        totalCount++;
-                        if (currentListData[categoryKey] && currentListData[categoryKey][item]) {
-                            selectedCount++;
-                        }
-                    });
-                }
             });
             
-            if (selectedCount === 0) {
-                alert('Por favor, selecciona al menos un artículo.');
+            if (totalItems === 0) {
+                alert('Por favor, selecciona al menos un artículo');
                 return;
             }
             
-            const listData = {
-                id: Date.now(),
-                name: listName,
-                date: listDate,
-                items: { ...currentListData },
-                customItems: { ...customItems },
-                selectedCount,
-                totalCount,
-                completedItems: {},
-                isCompleted: false
-            };
+            const saveBtn = document.getElementById('save-btn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<div class="loading"></div> Guardando...';
+            saveBtn.disabled = true;
             
-            // Guardar localmente
-            savedLists = getSavedData('shopping_lists');
-            savedLists.push(listData);
-            saveData('shopping_lists', savedLists);
-            
-            // Limpiar formulario
-            clearForm();
-            
-            // Mostrar listas guardadas
-            showSection('saved-lists');
-            loadSavedLists();
-            
-            alert('Lista guardada exitosamente!');
+            try {
+                const listData = {
+                    name: listName,
+                    created_by: familyMember,
+                    date: listDate,
+                    items: selectedItems,
+                    custom_items: customItems,
+                    total_items: totalItems,
+                    completed_items: 0,
+                    is_completed: false,
+                    created_at: new Date().toISOString()
+                };
+                
+                if (isConnected) {
+                    await saveListToSupabase(listData);
+                } else {
+                    // Guardar localmente si no hay conexión
+                    const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
+                    listData.id = Date.now(); // ID temporal
+                    localLists.unshift(listData);
+                    localStorage.setItem('shopping_lists', JSON.stringify(localLists));
+                }
+                
+                // Limpiar formulario
+                document.getElementById('list-name').value = '';
+                currentListData = {};
+                customItems = {};
+                generateCategories();
+                
+                // Recargar listas guardadas
+                await loadSavedLists();
+                
+                // Cambiar a la vista de listas guardadas
+                showSection('saved-lists');
+                
+                alert('¡Lista guardada exitosamente!');
+                
+            } catch (error) {
+                console.error('Error guardando lista:', error);
+                alert('Error al guardar la lista. Inténtalo de nuevo.');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
         }
 
-        function clearForm() {
-            document.getElementById('list-name').value = '';
-            setTodayDate();
-            currentListData = {};
-            customItems = {};
-            generateCategories();
-        }
-
-        function loadSavedLists() {
-            savedLists = getSavedData('shopping_lists');
-            displaySavedLists();
-        }
-
-        function displaySavedLists() {
+        async function loadSavedLists() {
             const container = document.getElementById('saved-lists-container');
             
-            if (savedLists.length === 0) {
+            try {
+                let lists = [];
+                
+                if (isConnected) {
+                    lists = await loadListsFromSupabase();
+                } else {
+                    // Cargar desde localStorage
+                    lists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
+                }
+                
+                savedLists = lists;
+                
+                if (lists.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝 No hay listas guardadas</h3>
+                            <p>Crea tu primera lista de supermercado</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                lists.forEach(list => {
+                    const listDiv = document.createElement('div');
+                    listDiv.className = 'saved-list';
+                    
+                    const progress = list.total_items > 0 ? 
+                        Math.round((list.completed_items / list.total_items) * 100) : 0;
+                    
+                    const formattedDate = new Date(list.date).toLocaleDateString('es-ES');
+                    
+                    let itemsHTML = '';
+                    Object.keys(list.items || {}).forEach(category => {
+                        Object.keys(list.items[category] || {}).forEach(item => {
+                            const itemData = list.items[category][item];
+                            const completedClass = itemData.completed ? 'completed' : '';
+                            itemsHTML += `
+                                <div class="saved-item ${completedClass}">
+                                    ${itemData.completed ? '✅' : '📦'} ${item}
+                                </div>
+                            `;
+                        });
+                    });
+                    
+                    listDiv.innerHTML = `
+                        <h3>${list.name}</h3>
+                        <div class="saved-list-meta">
+                            👤 ${list.created_by} • 📅 ${formattedDate} • 
+                            ${list.completed_items}/${list.total_items} completados (${progress}%)
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="saved-list-items">
+                            ${itemsHTML}
+                        </div>
+                        <div class="list-actions">
+                            <button class="shop-list-btn touchable" onclick="startShopping(${list.id || lists.indexOf(list)})">
+                                🛒 Ir de Compras
+                            </button>
+                            <button class="delete-list-btn touchable" onclick="deleteList(${list.id || lists.indexOf(list)})">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(listDiv);
+                });
+                
+            } catch (error) {
+                console.error('Error cargando listas:', error);
                 container.innerHTML = `
                     <div class="empty-state">
-                        <h3>No hay listas guardadas</h3>
-                        <p>Crea tu primera lista de compras</p>
+                        <h3>❌ Error cargando listas</h3>
+                        <p>No se pudieron cargar las listas guardadas</p>
                     </div>
                 `;
+            }
+        }
+
+        async function deleteList(listId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
                 return;
             }
             
-            container.innerHTML = savedLists.map(list => {
-                const completedCount = Object.keys(list.completedItems || {}).length;
-                const progressPercent = list.selectedCount > 0 ? (completedCount / list.selectedCount * 100) : 0;
+            try {
+                if (isConnected) {
+                    await deleteListFromSupabase(listId);
+                } else {
+                    // Eliminar de localStorage
+                    const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
+                    localLists.splice(listId, 1);
+                    localStorage.setItem('shopping_lists', JSON.stringify(localLists));
+                }
                 
-                // Generar vista previa de items
-                let itemsPreview = '';
-                Object.keys(list.items).forEach(category => {
-                    Object.keys(list.items[category]).forEach(item => {
-                        if (list.items[category][item]) {
-                            const isCompleted = list.completedItems && list.completedItems[`${category}-${item}`];
-                            itemsPreview += `
-                                <div class="saved-item ${isCompleted ? 'completed' : ''}">
-                                    <span>${isCompleted ? '✅' : '📦'}</span>
-                                    <span>${item}</span>
-                                </div>
-                            `;
-                        }
-                    });
-                });
+                await loadSavedLists();
                 
-                return `
-                    <div class="saved-list">
-                        <h3>${list.name}</h3>
-                        <div class="saved-list-meta">
-                            📅 ${new Date(list.date).toLocaleDateString('es-ES')} • 
-                            ${list.selectedCount} artículos • 
-                            ${completedCount} completados
-                            ${list.isCompleted ? ' • ✅ Completada' : ''}
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                        </div>
-                        <div class="saved-list-items">${itemsPreview}</div>
-                        <div class="list-actions">
-                            <button class="shop-list-btn" onclick="startShopping(${list.id})" ${list.isCompleted ? 'disabled' : ''}>
-                                🛒 ${list.isCompleted ? 'Completada' : 'Ir de Compras'}
-                            </button>
-                            <button class="delete-list-btn" onclick="deleteList(${list.id})">🗑️ Eliminar</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function deleteList(listId) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
-                savedLists = savedLists.filter(list => list.id !== listId);
-                saveData('shopping_lists', savedLists);
-                displaySavedLists();
+            } catch (error) {
+                console.error('Error eliminando lista:', error);
+                alert('Error al eliminar la lista');
             }
         }
 
         function startShopping(listId) {
-            currentShoppingList = savedLists.find(list => list.id === listId);
-            if (!currentShoppingList) return;
+            const list = isConnected ? 
+                savedLists.find(l => l.id === listId) : 
+                savedLists[listId];
             
+            if (!list) {
+                alert('Lista no encontrada');
+                return;
+            }
+            
+            currentShoppingList = list;
             shoppingMode = true;
-            showSection('shopping-mode');
-            generateShoppingCategories();
-            updateShoppingProgress();
             
             // Actualizar navegación
             const navButtons = document.querySelector('.nav-buttons');
             navButtons.innerHTML = `
-                <button class="btn shopping-mode active" onclick="showSection('shopping-mode')">🛒 Modo Compra</button>
-                <button class="btn" onclick="exitShoppingMode()">📋 Volver a Listas</button>
+                <button class="btn shopping-mode active touchable">🛒 Modo Compra</button>
             `;
+            
+            showSection('shopping-mode');
+            generateShoppingCategories();
+            updateShoppingProgress();
         }
 
         function generateShoppingCategories() {
+            if (!currentShoppingList) return;
+            
             const container = document.getElementById('shopping-categories-container');
+            const listNameElement = document.getElementById('shopping-list-name');
+            
+            listNameElement.textContent = `🛒 ${currentShoppingList.name}`;
             container.innerHTML = '';
             
-            document.getElementById('shopping-list-name').textContent = `🛒 ${currentShoppingList.name}`;
-            
-            Object.keys(baseProducts).forEach(categoryKey => {
+            Object.keys(currentShoppingList.items || {}).forEach(categoryKey => {
                 const category = baseProducts[categoryKey];
-                const categoryItems = [];
+                if (!category) return;
                 
-                // Agregar items base
-                category.items.forEach(item => {
-                    if (currentShoppingList.items[categoryKey] && currentShoppingList.items[categoryKey][item]) {
-                        categoryItems.push(item);
-                    }
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category ${categoryKey}`;
+                
+                let itemsHTML = '';
+                Object.keys(currentShoppingList.items[categoryKey] || {}).forEach(item => {
+                    const itemData = currentShoppingList.items[categoryKey][item];
+                    const itemId = `shopping-${categoryKey}-${item.replace(/\s+/g, '-')}`;
+                    const completedClass = itemData.completed ? 'completed' : '';
+                    
+                    itemsHTML += `
+                        <div class="item touchable ${completedClass}" onclick="toggleShoppingItem('${categoryKey}', '${item}')">
+                            <input type="checkbox" class="item-checkbox" id="${itemId}" ${itemData.completed ? 'checked' : ''}>
+                            <span class="item-name">${item}</span>
+                            <span class="item-status">${itemData.completed ? '✅' : '📦'}</span>
+                        </div>
+                    `;
                 });
                 
-                // Agregar items personalizados
-                if (currentShoppingList.customItems[categoryKey]) {
-                    currentShoppingList.customItems[categoryKey].forEach(item => {
-                        if (currentShoppingList.items[categoryKey] && currentShoppingList.items[categoryKey][item]) {
-                            categoryItems.push(item);
-                        }
-                    });
-                }
-                
-                if (categoryItems.length > 0) {
-                    const categoryDiv = document.createElement('div');
-                    categoryDiv.className = `category ${categoryKey}`;
-                    
-                    let itemsHTML = '';
-                    categoryItems.forEach(item => {
-                        const itemKey = `${categoryKey}-${item}`;
-                        const isCompleted = currentShoppingList.completedItems && currentShoppingList.completedItems[itemKey];
-                        
-                        itemsHTML += `
-                            <div class="item ${isCompleted ? 'completed' : ''}" onclick="toggleShoppingItem('${categoryKey}', '${item}')">
-                                <input type="checkbox" class="item-checkbox" ${isCompleted ? 'checked' : ''}>
-                                <span class="item-name">${item}</span>
-                                <span class="item-status">${isCompleted ? '✅' : '📦'}</span>
-                            </div>
-                        `;
-                    });
-                    
+                if (itemsHTML) {
                     categoryDiv.innerHTML = `
                         <h3>${category.name}</h3>
                         ${itemsHTML}
                     `;
-                    
                     container.appendChild(categoryDiv);
                 }
             });
         }
 
-        function toggleShoppingItem(category, item) {
-            const itemKey = `${category}-${item}`;
-            
-            if (!currentShoppingList.completedItems) {
-                currentShoppingList.completedItems = {};
+        async function toggleShoppingItem(category, item) {
+            if (!currentShoppingList || !currentShoppingList.items[category] || !currentShoppingList.items[category][item]) {
+                return;
             }
             
-            currentShoppingList.completedItems[itemKey] = !currentShoppingList.completedItems[itemKey];
+            // Toggle estado
+            currentShoppingList.items[category][item].completed = !currentShoppingList.items[category][item].completed;
             
-            // Actualizar visualmente
+            // Actualizar contadores
+            let completedItems = 0;
+            Object.keys(currentShoppingList.items).forEach(cat => {
+                Object.keys(currentShoppingList.items[cat]).forEach(itm => {
+                    if (currentShoppingList.items[cat][itm].completed) {
+                        completedItems++;
+                    }
+                });
+            });
+            
+            currentShoppingList.completed_items = completedItems;
+            
+            // Actualizar visual
             updateShoppingItemVisual(category, item);
             updateShoppingProgress();
             
-            // Actualizar lista guardada
-            const listIndex = savedLists.findIndex(list => list.id === currentShoppingList.id);
-            if (listIndex !== -1) {
-                savedLists[listIndex] = currentShoppingList;
-                saveData('shopping_lists', savedLists);
+            // Guardar cambios
+            try {
+                if (isConnected) {
+                    await updateListInSupabase(currentShoppingList.id, {
+                        items: currentShoppingList.items,
+                        completed_items: currentShoppingList.completed_items
+                    });
+                } else {
+                    // Actualizar localStorage
+                    const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
+                    const listIndex = localLists.findIndex(l => l.id === currentShoppingList.id);
+                    if (listIndex !== -1) {
+                        localLists[listIndex] = currentShoppingList;
+                        localStorage.setItem('shopping_lists', JSON.stringify(localLists));
+                    }
+                }
+            } catch (error) {
+                console.error('Error actualizando item:', error);
             }
         }
 
         function updateShoppingItemVisual(category, item) {
-            const itemKey = `${category}-${item}`;
-            const items = document.querySelectorAll(`[onclick*="${category}"][onclick*="${item}"]`);
+            const itemId = `shopping-${category}-${item.replace(/\s+/g, '-')}`;
+            const checkbox = document.getElementById(itemId);
+            if (!checkbox) return;
             
-            items.forEach(itemDiv => {
-                const checkbox = itemDiv.querySelector('.item-checkbox');
-                const statusSpan = itemDiv.querySelector('.item-status');
-                
-                if (currentShoppingList.completedItems[itemKey]) {
-                    itemDiv.classList.add('completed');
-                    checkbox.checked = true;
-                    statusSpan.textContent = '✅';
-                } else {
-                    itemDiv.classList.remove('completed');
-                    checkbox.checked = false;
-                    statusSpan.textContent = '📦';
-                }
-            });
+            const itemDiv = checkbox.parentElement;
+            const statusSpan = itemDiv.querySelector('.item-status');
+            
+            if (currentShoppingList.items[category][item].completed) {
+                itemDiv.classList.add('completed');
+                checkbox.checked = true;
+                statusSpan.textContent = '✅';
+            } else {
+                itemDiv.classList.remove('completed');
+                checkbox.checked = false;
+                statusSpan.textContent = '📦';
+            }
         }
 
         function updateShoppingProgress() {
-            const completedCount = Object.values(currentShoppingList.completedItems || {}).filter(Boolean).length;
-            const totalCount = currentShoppingList.selectedCount;
-            const progressPercent = totalCount > 0 ? (completedCount / totalCount * 100) : 0;
+            if (!currentShoppingList) return;
+            
+            const completedCount = currentShoppingList.completed_items || 0;
+            const totalCount = currentShoppingList.total_items || 0;
+            const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
             
             document.getElementById('completed-count').textContent = completedCount;
             document.getElementById('remaining-count').textContent = totalCount - completedCount;
-            document.getElementById('progress-percent').textContent = Math.round(progressPercent) + '%';
-            document.getElementById('shopping-progress').style.width = progressPercent + '%';
+            document.getElementById('progress-percent').textContent = `${progress}%`;
+            document.getElementById('shopping-progress').style.width = `${progress}%`;
         }
 
-        function finishShopping() {
-            const completedCount = Object.values(currentShoppingList.completedItems || {}).filter(Boolean).length;
-            const totalCount = currentShoppingList.selectedCount;
+        async function finishShopping() {
+            if (!currentShoppingList) return;
             
-            if (completedCount < totalCount) {
-                const remaining = totalCount - completedCount;
-                if (!confirm(`Aún tienes ${remaining} artículos pendientes. ¿Quieres finalizar la compra de todas formas?`)) {
+            const completedItems = currentShoppingList.completed_items || 0;
+            const totalItems = currentShoppingList.total_items || 0;
+            
+            if (completedItems < totalItems) {
+                const remainingItems = totalItems - completedItems;
+                if (!confirm(`Aún tienes ${remainingItems} artículos pendientes. ¿Quieres finalizar la compra de todas formas?`)) {
                     return;
                 }
             }
             
-            // Marcar lista como completada
-            currentShoppingList.isCompleted = true;
-            
-            // Actualizar lista guardada
-            const listIndex = savedLists.findIndex(list => list.id === currentShoppingList.id);
-            if (listIndex !== -1) {
-                savedLists[listIndex] = currentShoppingList;
-                saveData('shopping_lists', savedLists);
+            try {
+                currentShoppingList.is_completed = true;
+                currentShoppingList.completed_at = new Date().toISOString();
+                
+                if (isConnected) {
+                    await updateListInSupabase(currentShoppingList.id, {
+                        is_completed: true,
+                        completed_at: currentShoppingList.completed_at
+                    });
+                } else {
+                    // Actualizar localStorage
+                    const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
+                    const listIndex = localLists.findIndex(l => l.id === currentShoppingList.id);
+                    if (listIndex !== -1) {
+                        localLists[listIndex] = currentShoppingList;
+                        localStorage.setItem('shopping_lists', JSON.stringify(localLists));
+                    }
+                }
+                
+                alert('¡Compra finalizada exitosamente! 🎉');
+                exitShoppingMode();
+                
+            } catch (error) {
+                console.error('Error finalizando compra:', error);
+                alert('Error al finalizar la compra');
             }
-            
-            alert('¡Compra finalizada exitosamente!');
-            exitShoppingMode();
         }
 
         function exitShoppingMode() {
             shoppingMode = false;
             currentShoppingList = null;
             
-            // Restaurar navegación normal
+            // Restaurar navegación
             const navButtons = document.querySelector('.nav-buttons');
             navButtons.innerHTML = `
-                <button class="btn active" onclick="showSection('saved-lists')">📋 Listas Guardadas</button>
-                <button class="btn" onclick="showSection('new-list')">📝 Nueva Lista</button>
+                <button class="btn touchable" onclick="showSection('new-list')">📝 Nueva Lista</button>
+                <button class="btn active touchable" onclick="showSection('saved-lists')">📋 Listas Guardadas</button>
             `;
             
             showSection('saved-lists');
@@ -1175,110 +1387,57 @@
                 section.classList.remove('active');
             });
             
-            // Mostrar sección seleccionada
+            // Mostrar la sección seleccionada
             document.getElementById(sectionName).classList.add('active');
             
-            // Actualizar botones de navegación
-            document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Activar botón correspondiente
+            // Actualizar botones de navegación (solo si no estamos en modo compra)
             if (!shoppingMode) {
-                const activeBtn = Array.from(document.querySelectorAll('.nav-buttons .btn')).find(btn => 
-                    btn.onclick && btn.onclick.toString().includes(sectionName)
-                );
+                document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                const activeBtn = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
                 if (activeBtn) {
                     activeBtn.classList.add('active');
                 }
             }
         }
 
-        // Event listeners para teclas de acceso rápido
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                if (!shoppingMode && document.getElementById('new-list').classList.contains('active')) {
-                    saveList();
-                }
-            }
-            
-            if (e.key === 'Escape' && shoppingMode) {
-                exitShoppingMode();
-            }
-        });
-
         // Event listeners para inputs personalizados
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('custom-')) {
-                const category = e.target.id.replace('custom-', '');
-                addCustomItem(category);
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            
+            // Agregar event listeners para Enter en campos de texto personalizados
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('custom-')) {
+                    const category = e.target.id.replace('custom-', '');
+                    addCustomItem(category);
+                }
+            });
+        });
+
+        // Manejo de eventos táctiles mejorado
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.classList.contains('touchable')) {
+                e.target.style.opacity = '0.7';
             }
         });
 
-        // Inicializar aplicación cuando se carga la página
-        document.addEventListener('DOMContentLoaded', init);
-
-        // Función para manejar cambios en checkboxes
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('item-checkbox')) {
-                const itemDiv = e.target.parentElement;
-                const onclick = itemDiv.getAttribute('onclick');
-                if (onclick) {
-                    eval(onclick);
-                }
+        document.addEventListener('touchend', function(e) {
+            if (e.target.classList.contains('touchable')) {
+                e.target.style.opacity = '1';
             }
         });
 
-        // Función de búsqueda (opcional para futuras mejoras)
-        function searchItems(query) {
-            const items = document.querySelectorAll('.item');
-            items.forEach(item => {
-                const itemName = item.querySelector('.item-name').textContent.toLowerCase();
-                if (itemName.includes(query.toLowerCase())) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        // Funciones de exportación (para futuras mejoras)
-        function exportList(listId) {
-            const list = savedLists.find(l => l.id === listId);
-            if (!list) return;
-            
-            let exportText = `Lista de Compras: ${list.name}\n`;
-            exportText += `Fecha: ${new Date(list.date).toLocaleDateString('es-ES')}\n\n`;
-            
-            Object.keys(list.items).forEach(category => {
-                const categoryName = baseProducts[category].name;
-                let categoryItems = [];
-                
-                Object.keys(list.items[category]).forEach(item => {
-                    if (list.items[category][item]) {
-                        const isCompleted = list.completedItems && list.completedItems[`${category}-${item}`];
-                        categoryItems.push(`${isCompleted ? '✅' : '☐'} ${item}`);
-                    }
-                });
-                
-                if (categoryItems.length > 0) {
-                    exportText += `${categoryName}\n`;
-                    exportText += categoryItems.join('\n') + '\n\n';
-                }
-            });
-            
-            // Crear y descargar archivo
-            const blob = new Blob([exportText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${list.name.replace(/[^a-z0-9]/gi, '_')}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+        // Prevenir zoom en double-tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
     </script>
 </body>
 </html>
