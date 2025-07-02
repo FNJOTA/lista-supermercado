@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Lista de Supermercado Familiar</title>
@@ -234,9 +236,61 @@
             font-size: 0.95rem;
         }
 
+        .item-quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: inherit;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.9);
+        }
+
+        .item:not(.selected) .quantity-btn {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .quantity-display {
+            min-width: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 15px;
+        }
+
+        .item:not(.selected) .quantity-display {
+            background: #f8f9fa;
+            color: #333;
+        }
+
         .item-status {
             font-size: 1.3rem;
             flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .item-remove {
@@ -336,6 +390,7 @@
             border-radius: 6px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 6px;
             font-size: 0.85rem;
         }
@@ -344,6 +399,21 @@
             background: #d4edda;
             text-decoration: line-through;
             opacity: 0.7;
+        }
+
+        .saved-item-quantity {
+            background: #e9ecef;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .saved-item.completed .saved-item-quantity {
+            background: #c3e6cb;
         }
 
         .list-actions {
@@ -424,7 +494,7 @@
 
         .shopping-stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-top: 12px;
         }
@@ -619,7 +689,7 @@
             }
 
             .shopping-stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
                 text-align: left;
             }
@@ -648,6 +718,17 @@
             .delete-list-btn, .shop-list-btn, .edit-list-btn {
                 min-width: auto;
             }
+
+            .quantity-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 0.9rem;
+            }
+
+            .quantity-display {
+                min-width: 28px;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -655,7 +736,7 @@
     <div class="container">
         <div class="header">
             <h1>🛒 Lista de Supermercado Familiar</h1>
-            <p>Organizar compras de supermercado para no olvidarse de NADA!</p>
+            <p>Organizar compras con cantidades - ¡No olvides nada!</p>
             <div class="connection-status">
                 <div class="status-indicator" id="connection-status"></div>
                 <span id="connection-text">Conectando...</span>
@@ -685,7 +766,7 @@
                         <option value="Papá">👨 Papá</option>
                         <option value="Mamá">👩 Mamá</option>
                         <option value="Hijo/a 1">👦 Hijo</option>
-                        <option value="Hijo/a 2">👧 Hija </option>
+                        <option value="Hijo/a 2">👧 Hija</option>
                         <option value="Otro">👤 Otro</option>
                     </select>
                 </div>
@@ -735,6 +816,10 @@
                             <span class="stat-label">Progreso</span>
                             <span class="stat-number" id="progress-percent">0%</span>
                         </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Items</span>
+                            <span class="stat-number" id="total-quantity">0</span>
+                        </div>
                     </div>
                 </div>
 
@@ -774,7 +859,7 @@
 
                 <div class="edit-mode-controls">
                     <h4>🎯 Modo Edición Activado</h4>
-                    <p>Puedes agregar nuevos elementos, eliminar existentes con el botón ❌, y modificar el nombre de la lista</p>
+                    <p>Puedes agregar nuevos elementos, eliminar existentes con ❌, y cambiar cantidades con + / -</p>
                 </div>
 
                 <div class="categories edit-mode" id="edit-categories-container">
@@ -795,367 +880,216 @@
 
     <!-- Supabase JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.0/umd/index.min.js"></script>
-    
+
     <script>
-        // CONFIGURACIÓN DE SUPABASE
-        // ⚠️ IMPORTANTE: Reemplaza estos valores con tu configuración real de Supabase
+        // Configuración de Supabase
         const SUPABASE_URL = 'https://fkbibznxasdkzrrqecul.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYmliem54YXNka3pycnFlY3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MTUxNDcsImV4cCI6MjA2Njk5MTE0N30.usnm1yQ3dWdjvUHPW3YZmL3WQQJyp6lD3ot8IqmpSwA';
-        
-        // Inicializar Supabase
-        let supabase = null;
-        let isConnected = false;
-        let realTimeSubscription = null;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Variables globales
-        let currentListData = {};
-        let customItems = {};
         let currentShoppingList = null;
         let currentEditingList = null;
-        let shoppingMode = false;
-        let editMode = false;
-        let savedLists = [];
+        let isConnected = false;
 
-        // Productos base organizados por categorías
-        const baseProducts = {
-            dairy: {
-                name: "🥛 Lácteos",
-                items: ["Leche", "Queso", "Yogur", "Mantequilla", "Crema", "Queso crema"]
-            },
-            meat: {
-                name: "🥩 Carnes y Pescados",
-                items: ["Pollo", "Carne de res", "Cerdo", "Pescado", "Embutidos", "Huevos"]
-            },
-            vegetables: {
-                name: "🥬 Verduras",
-                items: ["Lechuga", "Tomates", "Cebollas", "Papas", "Zanahorias", "Apio", "Pimientos"]
-            },
-            fruits: {
-                name: "🍎 Frutas",
-                items: ["Manzanas", "Plátanos", "Naranjas", "Limones", "Fresas", "Uvas"]
-            },
-            grains: {
-                name: "🌾 Cereales y Granos",
-                items: ["Arroz", "Pan", "Pasta", "Avena", "Quinoa", "Harina"]
-            },
-            beverages: {
-                name: "🥤 Bebidas",
-                items: ["Agua", "Jugos", "Refrescos", "Café", "Té", "Cerveza"]
-            },
-            cleaning: {
-                name: "🧽 Limpieza",
-                items: ["Detergente", "Jabón", "Papel higiénico", "Toallas de papel", "Desinfectante"]
-            },
-            others: {
-                name: "🏪 Otros",
-                items: ["Aceite", "Sal", "Azúcar", "Especias", "Snacks", "Medicinas"]
-            }
+        // Productos por categoría
+        const products = {
+            dairy: ['Leche', 'Queso', 'Yogur', 'Mantequilla', 'Crema', 'Quesillo', 'Ricotta'],
+            meat: ['Pollo', 'Carne molida', 'Bistec', 'Cerdo', 'Pescado', 'Jamón', 'Salchichas'],
+            vegetables: ['Tomate', 'Cebolla', 'Ajo', 'Zanahoria', 'Lechuga', 'Pepino', 'Palta'],
+            fruits: ['Manzana', 'Plátano', 'Naranja', 'Limón', 'Frutilla', 'Uva', 'Pera'],
+            grains: ['Arroz', 'Pasta', 'Pan', 'Avena', 'Quinoa', 'Lentejas', 'Fideos'],
+            beverages: ['Agua', 'Jugo', 'Bebida', 'Café', 'Té', 'Vino', 'Cerveza'],
+            cleaning: ['Detergente', 'Cloro', 'Jabón', 'Papel higiénico', 'Shampoo', 'Pasta dental'],
+            others: ['Aceite', 'Sal', 'Azúcar', 'Pilas', 'Medicamentos', 'Condimentos']
         };
 
-        // Funciones de Supabase
-        async function initSupabase() {
-            if (!SUPABASE_URL || !SUPABASE_ANON_KEY || 
-                SUPABASE_URL === 'TU_SUPABASE_URL_AQUI' || 
-                SUPABASE_ANON_KEY === 'TU_SUPABASE_ANON_KEY_AQUI') {
-                updateConnectionStatus(false, 'Configurar Supabase');
-                console.error('Por favor, configura tu URL y clave de Supabase');
-                return;
-            }
+        const categoryNames = {
+            dairy: '🥛 Lácteos',
+            meat: '🥩 Carnes',
+            vegetables: '🥬 Vegetales',
+            fruits: '🍎 Frutas',
+            grains: '🌾 Granos',
+            beverages: '🥤 Bebidas',
+            cleaning: '🧽 Limpieza',
+            others: '📦 Otros'
+        };
 
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            checkConnection();
+            setInterval(checkConnection, 30000); // Verificar conexión cada 30 segundos
+        });
+
+        async function initializeApp() {
+            // Establecer fecha actual
+            document.getElementById('list-date').value = new Date().toISOString().split('T')[0];
+            
+            // Generar categorías
+            generateCategories();
+            
+            // Cargar listas guardadas
+            await loadSavedLists();
+            
+            // Configurar realtime
+            setupRealtimeSubscription();
+        }
+
+        async function checkConnection() {
             try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Verificar conexión
-                const { data, error } = await supabase.from('shopping_lists').select('count').limit(1);
-                
-                if (error) {
-                    throw error;
-                }
-                
+                const { data, error } = await supabase.from('shopping_lists').select('id').limit(1);
+                updateConnectionStatus(true);
                 isConnected = true;
-                updateConnectionStatus(true, 'Conectado');
-                setupRealTimeSubscription();
-                
             } catch (error) {
-                console.error('Error conectando con Supabase:', error);
-                updateConnectionStatus(false, 'Error de conexión');
+                updateConnectionStatus(false);
                 isConnected = false;
             }
         }
 
-        function updateConnectionStatus(connected, message) {
+        function updateConnectionStatus(connected) {
             const indicator = document.getElementById('connection-status');
             const text = document.getElementById('connection-text');
             
             if (connected) {
                 indicator.classList.remove('disconnected');
-                text.textContent = message;
+                text.textContent = 'Conectado';
             } else {
                 indicator.classList.add('disconnected');
-                text.textContent = message;
+                text.textContent = 'Sin conexión';
             }
         }
 
-        function setupRealTimeSubscription() {
-            if (!supabase) return;
-            
-            realTimeSubscription = supabase
-                .channel('shopping_lists_changes')
+        function setupRealtimeSubscription() {
+            supabase
+                .channel('shopping_lists')
                 .on('postgres_changes', 
                     { event: '*', schema: 'public', table: 'shopping_lists' },
                     (payload) => {
-                        console.log('Cambio en tiempo real:', payload);
-                        if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
-                            loadSavedLists();
-                        }
+                        console.log('Cambio detectado:', payload);
+                        loadSavedLists();
                     }
                 )
                 .subscribe();
         }
 
-        // Función para guardar lista en Supabase
-        async function saveToSupabase(listData) {
-            if (!isConnected) {
-                alert('No hay conexión a la base de datos. La lista se guardará localmente.');
-                return false;
-            }
-
-            try {
-                const { data, error } = await supabase
-                    .from('shopping_lists')
-                    .insert([listData]);
-
-                if (error) throw error;
-                return true;
-            } catch (error) {
-                console.error('Error guardando en Supabase:', error);
-                return false;
-            }
-        }
-
-        // Función para cargar listas de Supabase
-        async function loadFromSupabase() {
-            if (!isConnected) return [];
-
-            try {
-                const { data, error } = await supabase
-                    .from('shopping_lists')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                return data || [];
-            } catch (error) {
-                console.error('Error cargando de Supabase:', error);
-                return [];
-            }
-        }
-
-        // Función para actualizar lista en Supabase
-        async function updateInSupabase(id, listData) {
-            if (!isConnected) return false;
-
-            try {
-                const { data, error } = await supabase
-                    .from('shopping_lists')
-                    .update(listData)
-                    .eq('id', id);
-
-                if (error) throw error;
-                return true;
-            } catch (error) {
-                console.error('Error actualizando en Supabase:', error);
-                return false;
-            }
-        }
-
-        // Función para eliminar lista de Supabase
-        async function deleteFromSupabase(id) {
-            if (!isConnected) return false;
-
-            try {
-                const { data, error } = await supabase
-                    .from('shopping_lists')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-                return true;
-            } catch (error) {
-                console.error('Error eliminando de Supabase:', error);
-                return false;
-            }
-        }
-
-        // Funciones principales
-        function showSection(sectionId) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Mostrar la sección seleccionada
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Actualizar botones de navegación
-            document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Activar el botón correspondiente
-            if (sectionId === 'new-list') {
-                document.querySelector('.nav-buttons .btn:first-child').classList.add('active');
-            } else if (sectionId === 'saved-lists') {
-                document.querySelector('.nav-buttons .btn:last-child').classList.add('active');
-                loadSavedLists();
-            }
-        }
-
-        function generateCategories(containerId, forShopping = false, forEditing = false) {
-            const container = document.getElementById(containerId);
+        function generateCategories() {
+            const container = document.getElementById('categories-container');
             container.innerHTML = '';
-            
-            Object.keys(baseProducts).forEach(categoryKey => {
-                const category = baseProducts[categoryKey];
+
+            Object.entries(products).forEach(([category, items]) => {
                 const categoryDiv = document.createElement('div');
-                categoryDiv.className = `category ${categoryKey}`;
-                
-                let categoryHTML = `<h3>${category.name}</h3>`;
-                
-                // Generar items de la categoría
-                category.items.forEach(item => {
-                    const itemId = `${categoryKey}-${item.replace(/\s+/g, '-').toLowerCase()}`;
-                    const isSelected = currentListData[itemId] || false;
-                    const isCompleted = forShopping && currentShoppingList && currentShoppingList.items && currentShoppingList.items[itemId] && currentShoppingList.items[itemId].completed;
-                    
-                    let itemClass = 'item';
-                    if (forShopping && isCompleted) {
-                        itemClass += ' completed';
-                    } else if (isSelected) {
-                        itemClass += ' selected';
-                    }
-                    
-                    categoryHTML += `
-                        <div class="${itemClass}" onclick="${forShopping ? 'toggleShoppingItem' : 'toggleItem'}('${itemId}')">
-                            ${forShopping ? `<input type="checkbox" class="item-checkbox" ${isCompleted ? 'checked' : ''} onclick="event.stopPropagation()">` : ''}
-                            <span class="item-name">${item}</span>
-                            <span class="item-status">${isCompleted ? '✅' : (isSelected ? '✓' : '')}</span>
-                            ${forEditing ? `<button class="item-remove" onclick="event.stopPropagation(); removeItem('${itemId}')">✕</button>` : ''}
-                        </div>
-                    `;
-                });
-                
-                // Agregar input para items personalizados
-                if (!forShopping) {
-                    categoryHTML += `
-                        <div class="add-custom-item">
-                            <input type="text" placeholder="Agregar item personalizado..." onkeypress="handleCustomItemKeypress(event, '${categoryKey}')">
-                            <button onclick="addCustomItem('${categoryKey}')">+</button>
-                        </div>
-                    `;
-                }
-                
-                // Mostrar items personalizados
-                if (customItems[categoryKey]) {
-                    customItems[categoryKey].forEach(item => {
-                        const itemId = `${categoryKey}-custom-${item.replace(/\s+/g, '-').toLowerCase()}`;
-                        const isSelected = currentListData[itemId] || false;
-                        const isCompleted = forShopping && currentShoppingList && currentShoppingList.items && currentShoppingList.items[itemId] && currentShoppingList.items[itemId].completed;
-                        
-                        let itemClass = 'item';
-                        if (forShopping && isCompleted) {
-                            itemClass += ' completed';
-                        } else if (isSelected) {
-                            itemClass += ' selected';
-                        }
-                        
-                        categoryHTML += `
-                            <div class="${itemClass}" onclick="${forShopping ? 'toggleShoppingItem' : 'toggleItem'}('${itemId}')">
-                                ${forShopping ? `<input type="checkbox" class="item-checkbox" ${isCompleted ? 'checked' : ''} onclick="event.stopPropagation()">` : ''}
+                categoryDiv.className = `category ${category}`;
+                categoryDiv.innerHTML = `
+                    <h3>${categoryNames[category]}</h3>
+                    <div class="category-items">
+                        ${items.map(item => `
+                            <div class="item" data-category="${category}" data-name="${item}">
+                                <input type="checkbox" class="item-checkbox" onchange="toggleItem(this)">
                                 <span class="item-name">${item}</span>
-                                <span class="item-status">${isCompleted ? '✅' : (isSelected ? '✓' : '')}</span>
-                                ${forEditing ? `<button class="item-remove" onclick="event.stopPropagation(); removeCustomItem('${categoryKey}', '${item}')">✕</button>` : ''}
+                                <div class="item-quantity-controls">
+                                    <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
+                                    <span class="quantity-display">1</span>
+                                    <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                                </div>
+                                <span class="item-status">📋</span>
+                                <button class="item-remove" onclick="removeItem(this)">×</button>
                             </div>
-                        `;
-                    });
-                }
-                
-                categoryDiv.innerHTML = categoryHTML;
+                        `).join('')}
+                        <div class="add-custom-item">
+                            <input type="text" placeholder="Agregar producto personalizado..." onkeypress="addCustomItemOnEnter(event, '${category}')">
+                            <button onclick="addCustomItem(this, '${category}')">+</button>
+                        </div>
+                    </div>
+                `;
                 container.appendChild(categoryDiv);
             });
         }
 
-        function toggleItem(itemId) {
-            currentListData[itemId] = !currentListData[itemId];
-            generateCategories('categories-container');
+        function showSection(sectionId, button = null) {
+        // Ocultar todas las secciones
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Remover clase active de todos los botones
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Mostrar sección seleccionada
+        document.getElementById(sectionId).classList.add('active');
+
+        // Activar botón correspondiente si existe
+        if (button) {
+            button.classList.add('active');
         }
 
-        function toggleShoppingItem(itemId) {
-            if (!currentShoppingList.items) {
-                currentShoppingList.items = {};
+
+            // Cargar datos específicos de la sección
+            if (sectionId === 'saved-lists') {
+                loadSavedLists();
             }
-            
-            if (!currentShoppingList.items[itemId]) {
-                currentShoppingList.items[itemId] = { completed: false };
-            }
-            
-            currentShoppingList.items[itemId].completed = !currentShoppingList.items[itemId].completed;
-            
-            // Actualizar en Supabase
-            updateShoppingListInSupabase();
-            
-            // Actualizar UI
-            generateCategories('shopping-categories-container', true);
-            updateShoppingProgress();
         }
 
-        function handleCustomItemKeypress(event, categoryKey) {
+        function toggleItem(checkbox) {
+            const item = checkbox.closest('.item');
+            
+            if (checkbox.checked) {
+                item.classList.add('selected');
+                item.querySelector('.item-status').textContent = '✅';
+            } else {
+                item.classList.remove('selected');
+                item.querySelector('.item-status').textContent = '📋';
+            }
+        }
+
+        function changeQuantity(button, change) {
+            const quantityDisplay = button.parentElement.querySelector('.quantity-display');
+            let currentQuantity = parseInt(quantityDisplay.textContent);
+            let newQuantity = Math.max(1, currentQuantity + change);
+            quantityDisplay.textContent = newQuantity;
+        }
+
+        function removeItem(button) {
+            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                button.closest('.item').remove();
+            }
+        }
+
+        function addCustomItemOnEnter(event, category) {
             if (event.key === 'Enter') {
-                addCustomItem(categoryKey);
+                addCustomItem(event.target.nextElementSibling, category);
             }
         }
 
-        function addCustomItem(categoryKey) {
-            const input = document.querySelector(`#${editMode ? 'edit-' : ''}categories-container .category.${categoryKey} .add-custom-item input`);
+        function addCustomItem(button, category) {
+            const input = button.previousElementSibling;
             const itemName = input.value.trim();
             
             if (itemName) {
-                if (!customItems[categoryKey]) {
-                    customItems[categoryKey] = [];
-                }
+                const categoryDiv = button.closest('.category');
+                const itemsContainer = categoryDiv.querySelector('.category-items');
+                const addItemDiv = categoryDiv.querySelector('.add-custom-item');
                 
-                if (!customItems[categoryKey].includes(itemName)) {
-                    customItems[categoryKey].push(itemName);
-                    input.value = '';
-                    
-                    if (editMode) {
-                        generateCategories('edit-categories-container', false, true);
-                    } else {
-                        generateCategories('categories-container');
-                    }
-                }
-            }
-        }
-
-        function removeItem(itemId) {
-            if (confirm('¿Estás seguro de que quieres eliminar este item?')) {
-                delete currentListData[itemId];
-                generateCategories('edit-categories-container', false, true);
-            }
-        }
-
-        function removeCustomItem(categoryKey, itemName) {
-            if (confirm('¿Estás seguro de que quieres eliminar este item personalizado?')) {
-                const index = customItems[categoryKey].indexOf(itemName);
-                if (index > -1) {
-                    customItems[categoryKey].splice(index, 1);
-                    
-                    // También eliminar del currentListData
-                    const itemId = `${categoryKey}-custom-${itemName.replace(/\s+/g, '-').toLowerCase()}`;
-                    delete currentListData[itemId];
-                    
-                    generateCategories('edit-categories-container', false, true);
-                }
+                const newItemDiv = document.createElement('div');
+                newItemDiv.className = 'item';
+                newItemDiv.setAttribute('data-category', category);
+                newItemDiv.setAttribute('data-name', itemName);
+                newItemDiv.innerHTML = `
+                    <input type="checkbox" class="item-checkbox" onchange="toggleItem(this)">
+                    <span class="item-name">${itemName}</span>
+                    <div class="item-quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
+                        <span class="quantity-display">1</span>
+                        <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                    </div>
+                    <span class="item-status">📋</span>
+                    <button class="item-remove" onclick="removeItem(this)">×</button>
+                `;
+                
+                itemsContainer.insertBefore(newItemDiv, addItemDiv);
+                input.value = '';
             }
         }
 
@@ -1165,321 +1099,432 @@
             const listDate = document.getElementById('list-date').value;
             
             if (!listName) {
-                alert('Por favor, ingresa un nombre para la lista');
+                alert('Por favor ingresa un nombre para la lista');
                 return;
             }
             
-            // Contar items seleccionados
-            const selectedItems = Object.keys(currentListData).filter(key => currentListData[key]);
-            const totalCustomItems = Object.values(customItems).reduce((sum, items) => sum + items.length, 0);
+            const selectedItems = [];
+            document.querySelectorAll('.item input[type="checkbox"]:checked').forEach(checkbox => {
+                const item = checkbox.closest('.item');
+                const itemData = {
+                    name: item.dataset.name,
+                    category: item.dataset.category,
+                    quantity: parseInt(item.querySelector('.quantity-display').textContent),
+                    completed: false
+                };
+                selectedItems.push(itemData);
+            });
             
-            if (selectedItems.length === 0 && totalCustomItems === 0) {
-                alert('Por favor, selecciona al menos un item para la lista');
+            if (selectedItems.length === 0) {
+                alert('Por favor selecciona al menos un producto');
                 return;
             }
             
             const saveBtn = document.getElementById('save-btn');
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<div class="loading"></div> Guardando...';
             saveBtn.disabled = true;
-            
-            const listData = {
-                name: listName,
-                created_by: familyMember,
-                date: listDate || new Date().toISOString().split('T')[0],
-                items: currentListData,
-                custom_items: customItems,
-                created_at: new Date().toISOString(),
-                total_items: selectedItems.length + totalCustomItems,
-                completed_items: 0
-            };
+            saveBtn.innerHTML = '<div class="loading"></div> Guardando...';
             
             try {
-                const saved = await saveToSupabase(listData);
+                const { data, error } = await supabase
+                    .from('shopping_lists')
+                    .insert([{
+                        name: listName,
+                        created_by: familyMember,
+                        list_date: listDate,
+                        items: selectedItems,
+                        created_at: new Date().toISOString()
+                    }]);
                 
-                if (saved || !isConnected) {
-                    // Si no hay conexión, guardar localmente
-                    if (!saved) {
-                        const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
-                        listData.id = Date.now(); // ID temporal
-                        localLists.unshift(listData);
-                        localStorage.setItem('shopping_lists', JSON.stringify(localLists));
-                    }
-                    
-                    alert('Lista guardada exitosamente!');
-                    
-                    // Limpiar formulario
-                    document.getElementById('list-name').value = '';
-                    document.getElementById('list-date').value = '';
-                    currentListData = {};
-                    customItems = {};
-                    generateCategories('categories-container');
-                    
-                    // Mostrar listas guardadas
-                    showSection('saved-lists');
-                } else {
-                    alert('Error al guardar la lista');
-                }
+                if (error) throw error;
+                
+                alert('¡Lista guardada exitosamente!');
+                clearForm();
+                await loadSavedLists();
+                showSection('saved-lists');
+                
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error al guardar la lista');
+                console.error('Error guardando lista:', error);
+                alert('Error al guardar la lista. Por favor intenta de nuevo.');
             } finally {
-                saveBtn.innerHTML = originalText;
                 saveBtn.disabled = false;
+                saveBtn.innerHTML = '💾 Guardar Lista';
             }
+        }
+
+        function clearForm() {
+            document.getElementById('list-name').value = '';
+            document.getElementById('list-date').value = new Date().toISOString().split('T')[0];
+            
+            // Deseleccionar todos los items y resetear cantidades
+            document.querySelectorAll('.item').forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                checkbox.checked = false;
+                item.classList.remove('selected');
+                item.querySelector('.item-status').textContent = '📋';
+                item.querySelector('.quantity-display').textContent = '1';
+            });
         }
 
         async function loadSavedLists() {
             const container = document.getElementById('saved-lists-container');
-            container.innerHTML = '<div class="loading" style="margin: 20px auto;"></div>';
             
             try {
-                let lists = [];
+                const { data: lists, error } = await supabase
+                    .from('shopping_lists')
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 
-                if (isConnected) {
-                    lists = await loadFromSupabase();
-                } else {
-                    // Cargar de localStorage si no hay conexión
-                    lists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
-                }
-                
-                savedLists = lists;
+                if (error) throw error;
                 
                 if (lists.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
-                            <h3>No hay listas guardadas</h3>
-                            <p>Crea tu primera lista de compras usando el botón "Nueva Lista"</p>
+                            <h3>📝 No hay listas guardadas</h3>
+                            <p>Crea tu primera lista de compras para comenzar</p>
                         </div>
                     `;
                     return;
                 }
                 
-                container.innerHTML = '';
-                
-                lists.forEach((list, index) => {
-                    const listDiv = document.createElement('div');
-                    listDiv.className = 'saved-list';
+                container.innerHTML = lists.map(list => {
+                    const totalItems = list.items.length;
+                    const completedItems = list.items.filter(item => item.completed).length;
+                    const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
                     
-                    const createdDate = new Date(list.created_at).toLocaleDateString();
-                    const progress = list.total_items > 0 ? Math.round((list.completed_items / list.total_items) * 100) : 0;
-                    
-                    listDiv.innerHTML = `
-                        <h3>${list.name}</h3>
-                        <div class="saved-list-meta">
-                            Creada por ${list.created_by} - ${createdDate}
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%"></div>
-                        </div>
-                        <div class="saved-list-meta">
-                            Progreso: ${list.completed_items}/${list.total_items} items (${progress}%)
-                        </div>
-                        <div class="saved-list-items">
-                            ${generateSavedListItems(list)}
-                        </div>
-                        <div class="list-actions">
-                            <button class="shop-list-btn touchable" onclick="startShopping(${index})">
-                                🛒 Comprar
-                            </button>
-                            <button class="edit-list-btn touchable" onclick="editList(${index})">
-                                ✏️ Editar
-                            </button>
-                            <button class="delete-list-btn touchable" onclick="deleteList(${index})">
-                                🗑️ Eliminar
-                            </button>
+                    return `
+                        <div class="saved-list">
+                            <h3>${list.name}</h3>
+                            <div class="saved-list-meta">
+                                📅 ${new Date(list.list_date).toLocaleDateString('es-ES')} • 
+                                👤 ${list.created_by} • 
+                                📦 ${totalItems} productos
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="saved-list-items">
+                                ${list.items.slice(0, 6).map(item => `
+                                    <div class="saved-item ${item.completed ? 'completed' : ''}">
+                                        <span>${item.name}</span>
+                                        <span class="saved-item-quantity">${item.quantity}</span>
+                                    </div>
+                                `).join('')}
+                                ${list.items.length > 6 ? `<div class="saved-item">... y ${list.items.length - 6} más</div>` : ''}
+                            </div>
+                            <div class="list-actions">
+                                <button class="shop-list-btn touchable" onclick="startShopping('${list.id}')">🛒 Comprar</button>
+                                <button class="edit-list-btn touchable" onclick="editList('${list.id}')">✏️ Editar</button>
+                                <button class="delete-list-btn touchable" onclick="deleteList('${list.id}')">🗑️ Eliminar</button>
+                            </div>
                         </div>
                     `;
-                    
-                    container.appendChild(listDiv);
-                });
+                }).join('');
                 
             } catch (error) {
                 console.error('Error cargando listas:', error);
                 container.innerHTML = `
                     <div class="empty-state">
-                        <h3>Error cargando listas</h3>
-                        <p>Intenta recargar la página</p>
+                        <h3>❌ Error al cargar listas</h3>
+                        <p>No se pudieron cargar las listas guardadas</p>
                     </div>
                 `;
             }
         }
 
-        function generateSavedListItems(list) {
-            let itemsHTML = '';
-            let itemCount = 0;
-            const maxItems = 6; // Mostrar máximo 6 items
+        async function deleteList(listId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
+                return;
+            }
             
-            // Items base
-            Object.keys(list.items || {}).forEach(itemId => {
-                if (list.items[itemId] && itemCount < maxItems) {
-                    const isCompleted = list.items && list.items[itemId] && list.items[itemId].completed;
-                    const itemName = getItemNameFromId(itemId);
-                    itemsHTML += `<div class="saved-item ${isCompleted ? 'completed' : ''}">${itemName}</div>`;
-                    itemCount++;
+            try {
+                const { error } = await supabase
+                    .from('shopping_lists')
+                    .delete()
+                    .eq('id', listId);
+                
+                if (error) throw error;
+                
+                await loadSavedLists();
+            } catch (error) {
+                console.error('Error eliminando lista:', error);
+                alert('Error al eliminar la lista');
+            }
+        }
+
+        async function startShopping(listId) {
+            try {
+                const { data: list, error } = await supabase
+                    .from('shopping_lists')
+                    .select('*')
+                    .eq('id', listId)
+                    .single();
+                
+                if (error) throw error;
+                
+                currentShoppingList = list;
+                setupShoppingMode();
+                showShoppingSection();
+                
+            } catch (error) {
+                console.error('Error iniciando compra:', error);
+                alert('Error al iniciar modo compra');
+            }
+        }
+
+        function setupShoppingMode() {
+            const listNameElement = document.getElementById('shopping-list-name');
+            listNameElement.textContent = `🛒 ${currentShoppingList.name}`;
+            
+            generateShoppingCategories();
+            updateShoppingStats();
+        }
+
+        function generateShoppingCategories() {
+            const container = document.getElementById('shopping-categories-container');
+            container.innerHTML = '';
+            
+            // Agrupar items por categoría
+            const itemsByCategory = {};
+            currentShoppingList.items.forEach(item => {
+                if (!itemsByCategory[item.category]) {
+                    itemsByCategory[item.category] = [];
                 }
+                itemsByCategory[item.category].push(item);
             });
             
-            // Items personalizados
-            if (list.custom_items) {
-                Object.keys(list.custom_items).forEach(categoryKey => {
-                    list.custom_items[categoryKey].forEach(item => {
-                        if (itemCount < maxItems) {
-                            const itemId = `${categoryKey}-custom-${item.replace(/\s+/g, '-').toLowerCase()}`;
-                            const isCompleted = list.items && list.items[itemId] && list.items[itemId].completed;
-                            itemsHTML += `<div class="saved-item ${isCompleted ? 'completed' : ''}">${item}</div>`;
-                            itemCount++;
-                        }
-                    });
-                });
-            }
-            
-            if (itemCount === 0) {
-                itemsHTML = '<div class="saved-item">Lista vacía</div>';
-            } else if (list.total_items > maxItems) {
-                itemsHTML += `<div class="saved-item">... y ${list.total_items - maxItems} más</div>`;
-            }
-            
-            return itemsHTML;
-        }
-
-        function getItemNameFromId(itemId) {
-            const parts = itemId.split('-');
-            const categoryKey = parts[0];
-            
-            if (parts.includes('custom')) {
-                return parts.slice(2).join(' ').replace(/\b\w/g, l => l.toUpperCase());
-            }
-            
-            const category = baseProducts[categoryKey];
-            if (category) {
-                const itemName = parts.slice(1).join(' ').replace(/\b\w/g, l => l.toUpperCase());
-                const foundItem = category.items.find(item => 
-                    item.toLowerCase().replace(/\s+/g, '-') === parts.slice(1).join('-')
-                );
-                return foundItem || itemName;
-            }
-            
-            return itemId;
-        }
-
-        function startShopping(listIndex) {
-            const list = savedLists[listIndex];
-            currentShoppingList = { ...list };
-            
-            // Inicializar items si no existen
-            if (!currentShoppingList.items) {
-                currentShoppingList.items = {};
-                
-                // Marcar items seleccionados
-                Object.keys(list.items || {}).forEach(itemId => {
-                    if (list.items[itemId]) {
-                        currentShoppingList.items[itemId] = { completed: false };
-                    }
-                });
-                
-                // Agregar items personalizados
-                if (list.custom_items) {
-                    Object.keys(list.custom_items).forEach(categoryKey => {
-                        list.custom_items[categoryKey].forEach(item => {
-                            const itemId = `${categoryKey}-custom-${item.replace(/\s+/g, '-').toLowerCase()}`;
-                            currentShoppingList.items[itemId] = { completed: false };
-                        });
-                    });
-                }
-            }
-            
-            // Configurar para modo compra
-            currentListData = {};
-            customItems = list.custom_items || {};
-            
-            Object.keys(currentShoppingList.items).forEach(itemId => {
-                currentListData[itemId] = true;
+            Object.entries(itemsByCategory).forEach(([category, items]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category ${category}`;
+                categoryDiv.innerHTML = `
+                    <h3>${categoryNames[category]}</h3>
+                    <div class="category-items">
+                        ${items.map((item, index) => `
+                            <div class="item ${item.completed ? 'completed' : ''}" data-item-index="${currentShoppingList.items.indexOf(item)}">
+                                <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleShoppingItem(this)">
+                                <span class="item-name">${item.name}</span>
+                                <div class="item-quantity-controls">
+                                    <span class="quantity-display">${item.quantity}</span>
+                                </div>
+                                <span class="item-status">${item.completed ? '✅' : '🛒'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categoryDiv);
             });
-            
-            shoppingMode = true;
-            document.getElementById('shopping-list-name').textContent = `🛒 ${list.name}`;
-            
-            // Ocultar botones de navegación
-            document.querySelector('.nav-buttons').style.display = 'none';
-            
-            // Mostrar sección de compra
-            showSection('shopping-mode');
-            generateCategories('shopping-categories-container', true);
-            updateShoppingProgress();
         }
 
-        function updateShoppingProgress() {
-            if (!currentShoppingList || !currentShoppingList.items) return;
+        async function toggleShoppingItem(checkbox) {
+            const item = checkbox.closest('.item');
+            const itemIndex = parseInt(item.dataset.itemIndex);
             
-            const items = Object.values(currentShoppingList.items);
-            const completed = items.filter(item => item.completed).length;
-            const total = items.length;
-            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+            currentShoppingList.items[itemIndex].completed = checkbox.checked;
             
-            document.getElementById('completed-count').textContent = completed;
-            document.getElementById('remaining-count').textContent = total - completed;
+            if (checkbox.checked) {
+                item.classList.add('completed');
+                item.querySelector('.item-status').textContent = '✅';
+            } else {
+                item.classList.remove('completed');
+                item.querySelector('.item-status').textContent = '🛒';
+            }
+            
+            updateShoppingStats();
+            
+            // Guardar cambios en la base de datos
+            try {
+                await supabase
+                    .from('shopping_lists')
+                    .update({ items: currentShoppingList.items })
+                    .eq('id', currentShoppingList.id);
+            } catch (error) {
+                console.error('Error actualizando item:', error);
+            }
+        }
+
+        function updateShoppingStats() {
+            const totalItems = currentShoppingList.items.length;
+            const completedItems = currentShoppingList.items.filter(item => item.completed).length;
+            const remainingItems = totalItems - completedItems;
+            const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+            const totalQuantity = currentShoppingList.items.reduce((sum, item) => sum + item.quantity, 0);
+            
+            document.getElementById('completed-count').textContent = completedItems;
+            document.getElementById('remaining-count').textContent = remainingItems;
             document.getElementById('progress-percent').textContent = `${progress}%`;
+            document.getElementById('total-quantity').textContent = totalQuantity;
             document.getElementById('shopping-progress').style.width = `${progress}%`;
         }
 
-        async function updateShoppingListInSupabase() {
-            if (!isConnected || !currentShoppingList.id) return;
+        function showShoppingSection() {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
             
-            const items = Object.values(currentShoppingList.items || {});
-            const completedItems = items.filter(item => item.completed).length;
+            // Mostrar modo compra
+            document.getElementById('shopping-mode').classList.add('active');
             
-            const updateData = {
-                items: currentShoppingList.items,
-                completed_items: completedItems
-            };
+            // Actualizar botones de navegación
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active', 'shopping-mode');
+            });
             
-            await updateInSupabase(currentShoppingList.id, updateData);
+            // Crear botón temporal de modo compra si no existe
+            const navButtons = document.querySelector('.nav-buttons');
+            let shoppingBtn = navButtons.querySelector('.shopping-mode-btn');
+            if (!shoppingBtn) {
+                shoppingBtn = document.createElement('button');
+                shoppingBtn.className = 'btn shopping-mode shopping-mode-btn active';
+                shoppingBtn.innerHTML = '🛒 Modo Compra';
+                shoppingBtn.onclick = () => showShoppingSection();
+                navButtons.appendChild(shoppingBtn);
+            } else {
+                shoppingBtn.classList.add('active');
+            }
         }
 
-        function finishShopping() {
-            if (confirm('¿Has terminado de comprar? Esto marcará la lista como completada.')) {
-                // Marcar todos los items como completados
-                if (currentShoppingList.items) {
-                    Object.keys(currentShoppingList.items).forEach(itemId => {
-                        currentShoppingList.items[itemId].completed = true;
-                    });
-                }
+        async function finishShopping() {
+            if (!confirm('¿Finalizar compra? Esto marcará la lista como completada. LUEGO NO QUIERO EN LA CASA DICIENDO QUE LES FALTO ALGO!')) {
+                return;
+            }
+            
+            try {
+                await supabase
+                    .from('shopping_lists')
+                    .update({ 
+                        completed: true,
+                        completed_at: new Date().toISOString()
+                    })
+                    .eq('id', currentShoppingList.id);
                 
-                updateShoppingListInSupabase();
+                alert('¡Compra finalizada exitosamente!');
                 exitShoppingMode();
-                alert('¡Compra completada exitosamente!');
+                
+            } catch (error) {
+                console.error('Error finalizando compra:', error);
+                alert('Error al finalizar compra');
             }
         }
 
         function exitShoppingMode() {
-            shoppingMode = false;
             currentShoppingList = null;
-            document.querySelector('.nav-buttons').style.display = 'flex';
+            
+            // Remover botón de modo compra
+            const shoppingBtn = document.querySelector('.shopping-mode-btn');
+            if (shoppingBtn) {
+                shoppingBtn.remove();
+            }
+            
+            // Volver a listas guardadas
             showSection('saved-lists');
+            loadSavedLists();
         }
 
-        function editList(listIndex) {
-            const list = savedLists[listIndex];
-            currentEditingList = { ...list };
+        async function editList(listId) {
+            try {
+                const { data: list, error } = await supabase
+                    .from('shopping_lists')
+                    .select('*')
+                    .eq('id', listId)
+                    .single();
+                
+                if (error) throw error;
+                
+                currentEditingList = list;
+                setupEditMode();
+                showEditSection();
+                
+            } catch (error) {
+                console.error('Error iniciando edición:', error);
+                alert('Error al iniciar modo edición');
+            }
+        }
+
+        function setupEditMode() {
+            document.getElementById('edit-list-name').textContent = `✏️ ${currentEditingList.name}`;
+            document.getElementById('edit-list-name-input').value = currentEditingList.name;
+            document.getElementById('edit-family-member').value = currentEditingList.created_by;
             
-            // Configurar datos para edición
-            currentListData = { ...list.items };
-            customItems = { ...list.custom_items } || {};
+            generateEditCategories();
+        }
+
+        function generateEditCategories() {
+            const container = document.getElementById('edit-categories-container');
+            container.innerHTML = '';
             
-            // Llenar formulario de edición
-            document.getElementById('edit-list-name-input').value = list.name;
-            document.getElementById('edit-family-member').value = list.created_by;
-            document.getElementById('edit-list-name').textContent = `✏️ Editar: ${list.name}`;
+            Object.entries(products).forEach(([category, defaultItems]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `category ${category}`;
+                
+                // Obtener items existentes de esta categoría
+                const existingItems = currentEditingList.items.filter(item => item.category === category);
+                
+                // Combinar items por defecto con items existentes
+                const allItems = [...defaultItems];
+                existingItems.forEach(existingItem => {
+                    if (!allItems.includes(existingItem.name)) {
+                        allItems.push(existingItem.name);
+                    }
+                });
+                
+                categoryDiv.innerHTML = `
+                    <h3>${categoryNames[category]}</h3>
+                    <div class="category-items">
+                        ${allItems.map(itemName => {
+                            const existingItem = existingItems.find(item => item.name === itemName);
+                            const isSelected = !!existingItem;
+                            const quantity = existingItem ? existingItem.quantity : 1;
+                            
+                            return `
+                                <div class="item ${isSelected ? 'selected' : ''}" data-category="${category}" data-name="${itemName}">
+                                    <input type="checkbox" class="item-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleItem(this)">
+                                    <span class="item-name">${itemName}</span>
+                                    <div class="item-quantity-controls">
+                                        <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
+                                        <span class="quantity-display">${quantity}</span>
+                                        <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                                    </div>
+                                    <span class="item-status">${isSelected ? '✅' : '📋'}</span>
+                                    <button class="item-remove" onclick="removeItem(this)">×</button>
+                                </div>
+                            `;
+                        }).join('')}
+                        <div class="add-custom-item">
+                            <input type="text" placeholder="Agregar producto personalizado..." onkeypress="addCustomItemOnEnter(event, '${category}')">
+                            <button onclick="addCustomItem(this, '${category}')">+</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function showEditSection() {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
             
-            editMode = true;
+            // Mostrar modo edición
+            document.getElementById('edit-mode').classList.add('active');
             
-            // Ocultar botones de navegación
-            document.querySelector('.nav-buttons').style.display = 'none';
+            // Actualizar botones de navegación
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active', 'edit-mode');
+            });
             
-            // Mostrar sección de edición
-            showSection('edit-mode');
-            generateCategories('edit-categories-container', false, true);
+            // Crear botón temporal de modo edición si no existe
+            const navButtons = document.querySelector('.nav-buttons');
+            let editBtn = navButtons.querySelector('.edit-mode-btn');
+            if (!editBtn) {
+                editBtn = document.createElement('button');
+                editBtn.className = 'btn edit-mode edit-mode-btn active';
+                editBtn.innerHTML = '✏️ Modo Edición';
+                editBtn.onclick = () => showEditSection();
+                navButtons.appendChild(editBtn);
+            } else {
+                editBtn.classList.add('active');
+            }
         }
 
         async function saveEditedList() {
@@ -1487,107 +1532,79 @@
             const familyMember = document.getElementById('edit-family-member').value;
             
             if (!listName) {
-                alert('Por favor, ingresa un nombre para la lista');
+                alert('Por favor ingresa un nombre para la lista');
                 return;
             }
             
-            const selectedItems = Object.keys(currentListData).filter(key => currentListData[key]);
-            const totalCustomItems = Object.values(customItems).reduce((sum, items) => sum + items.length, 0);
+            const selectedItems = [];
+            document.querySelectorAll('#edit-mode .item input[type="checkbox"]:checked').forEach(checkbox => {
+                const item = checkbox.closest('.item');
+                const itemData = {
+                    name: item.dataset.name,
+                    category: item.dataset.category,
+                    quantity: parseInt(item.querySelector('.quantity-display').textContent),
+                    completed: false
+                };
+                selectedItems.push(itemData);
+            });
             
-            if (selectedItems.length === 0 && totalCustomItems === 0) {
-                alert('Por favor, selecciona al menos un item para la lista');
+            if (selectedItems.length === 0) {
+                alert('Por favor selecciona al menos un producto');
                 return;
             }
-            
-            const updateData = {
-                name: listName,
-                created_by: familyMember,
-                items: currentListData,
-                custom_items: customItems,
-                total_items: selectedItems.length + totalCustomItems
-            };
             
             try {
-                if (isConnected && currentEditingList.id) {
-                    await updateInSupabase(currentEditingList.id, updateData);
-                } else {
-                    // Actualizar en localStorage
-                    const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
-                    const index = localLists.findIndex(l => l.id === currentEditingList.id);
-                    if (index > -1) {
-                        localLists[index] = { ...localLists[index], ...updateData };
-                        localStorage.setItem('shopping_lists', JSON.stringify(localLists));
-                    }
-                }
+                const { error } = await supabase
+                    .from('shopping_lists')
+                    .update({
+                        name: listName,
+                        created_by: familyMember,
+                        items: selectedItems,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', currentEditingList.id);
                 
-                alert('Lista actualizada exitosamente!');
+                if (error) throw error;
+                
+                alert('¡Lista actualizada exitosamente!');
                 exitEditMode();
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error actualizando lista:', error);
                 alert('Error al actualizar la lista');
             }
         }
 
         function exitEditMode() {
-            editMode = false;
             currentEditingList = null;
-            currentListData = {};
-            customItems = {};
-            document.querySelector('.nav-buttons').style.display = 'flex';
-            showSection('saved-lists');
-        }
-
-        async function deleteList(listIndex) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
-                const list = savedLists[listIndex];
-                
-                try {
-                    if (isConnected && list.id) {
-                        await deleteFromSupabase(list.id);
-                    } else {
-                        // Eliminar de localStorage
-                        const localLists = JSON.parse(localStorage.getItem('shopping_lists') || '[]');
-                        const filteredLists = localLists.filter(l => l.id !== list.id);
-                        localStorage.setItem('shopping_lists', JSON.stringify(filteredLists));
-                    }
-                    
-                    alert('Lista eliminada exitosamente');
-                    loadSavedLists();
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al eliminar la lista');
-                }
+            
+            // Remover botón de modo edición
+            const editBtn = document.querySelector('.edit-mode-btn');
+            if (editBtn) {
+                editBtn.remove();
             }
+            
+            // Volver a listas guardadas
+            showSection('saved-lists');
+            loadSavedLists();
         }
 
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configurar fecha por defecto
-            const today = new Date();
-            document.getElementById('list-date').value = today.toISOString().split('T')[0];
-            
-            // Generar categorías iniciales
-            generateCategories('categories-container');
-            
-            // Inicializar Supabase
-            initSupabase();
-            
-            // Cargar listas guardadas si estamos en esa sección
-            if (document.getElementById('saved-lists').classList.contains('active')) {
-                loadSavedLists();
+        // Funciones de utilidad para touch
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.classList.contains('touchable')) {
+                e.target.style.transform = 'scale(0.95)';
             }
         });
 
-        // Prevenir zoom en dispositivos móviles
-        document.addEventListener('touchstart', function(event) {
-            if (event.touches.length > 1) {
-                event.preventDefault();
+        document.addEventListener('touchend', function(e) {
+            if (e.target.classList.contains('touchable')) {
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
             }
-        }, { passive: false });
+        });
 
-        let lastTouchEnd = 0;
+        // Prevenir zoom en doble tap
         document.addEventListener('touchend', function(event) {
             const now = (new Date()).getTime();
             if (now - lastTouchEnd <= 300) {
@@ -1595,6 +1612,8 @@
             }
             lastTouchEnd = now;
         }, false);
+
+        let lastTouchEnd = 0;
     </script>
 </body>
-</html>    
+</html>
