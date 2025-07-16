@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Lista de Supermercado Familiar</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -16,41 +16,62 @@
         }
 
         body {
-            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 10px;
+            padding: 8px;
             font-size: 16px;
-            line-height: 1.4;
+            line-height: 1.5;
+            color: #333;
         }
 
         .container {
-            max-width: 100%;
+            max-width: 420px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
-            min-height: calc(100vh - 20px);
+            min-height: calc(100vh - 16px);
+            position: relative;
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            padding: 20px 15px;
-            text-align: center;
+            padding: 24px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
         }
 
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 1.75rem;
+            font-weight: 700;
             margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: -0.5px;
         }
 
         .header p {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             opacity: 0.9;
+            font-weight: 400;
         }
 
         .connection-status {
@@ -58,31 +79,40 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 10px;
-            font-size: 0.85rem;
+            margin-top: 16px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
         }
 
         .status-indicator {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #28a745;
+            background: #10b981;
+            animation: pulse 2s infinite;
         }
 
         .status-indicator.disconnected {
-            background: #dc3545;
+            background: #ef4444;
+            animation: none;
         }
 
         .main-content {
-            padding: 15px;
+            padding: 20px;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: #f8fafc;
+            border-radius: 16px;
             overflow-x: auto;
-            padding-bottom: 5px;
+            scrollbar-width: none;
         }
 
         .nav-buttons::-webkit-scrollbar {
@@ -90,19 +120,37 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: transparent;
+            color: #64748b;
             border: none;
             padding: 12px 20px;
-            border-radius: 25px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
             min-width: fit-content;
             touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
         }
 
         .btn:active {
@@ -110,80 +158,136 @@
         }
 
         .btn.active {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
         }
 
         .btn.shopping-mode {
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
         }
 
         .btn.edit-mode {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
         .section {
             display: none;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .section.active {
             display: block;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 0.95rem;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
         }
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 14px 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
             font-size: 1rem;
-            transition: border-color 0.3s ease;
-            -webkit-appearance: none;
-            appearance: none;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            font-family: inherit;
         }
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
         .categories {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 32px;
         }
 
         .category {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            border-left: 4px solid;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
         }
 
-        .category.dairy { border-left-color: #ffd93d; }
-        .category.meat { border-left-color: #ff6b6b; }
-        .category.vegetables { border-left-color: #4ecdc4; }
-        .category.fruits { border-left-color: #45b7d1; }
-        .category.grains { border-left-color: #f9ca24; }
-        .category.beverages { border-left-color: #6c5ce7; }
-        .category.cleaning { border-left-color: #a29bfe; }
-        .category.others { border-left-color: #fd79a8; }
+        .category:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .category.dairy { 
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border-color: #fbbf24;
+        }
+        .category.meat { 
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #f87171;
+        }
+        .category.vegetables { 
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #4ade80;
+        }
+        .category.fruits { 
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #60a5fa;
+        }
+        .category.grains { 
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fbbf24;
+        }
+        .category.beverages { 
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-color: #a78bfa;
+        }
+        .category.cleaning { 
+            background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%);
+            border-color: #a1a1aa;
+        }
+        .category.condimentos { 
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+            border-color: #fb923c;
+        }
+        .category.abarrotes { 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-color: #64748b;
+        }
+        .category.Javier { 
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+            border-color: #f472b6;
+        }
+        .category.Copito { 
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-color: #38bdf8;
+        }
 
         .category h3 {
-            color: #333;
-            margin-bottom: 12px;
-            font-size: 1.1rem;
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 1.125rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -193,16 +297,23 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
+            padding: 16px;
             margin-bottom: 8px;
-            background: white;
-            border-radius: 10px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
             border: 2px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             touch-action: manipulation;
-            min-height: 48px;
+            min-height: 56px;
             position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .item:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .item:active {
@@ -210,24 +321,30 @@
         }
 
         .item.selected {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            border-color: #667eea;
+            border-color: #6366f1;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
         }
 
         .item.completed {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            border-color: #11998e;
+            border-color: #10b981;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .item.completed .item-name {
             text-decoration: line-through;
             opacity: 0.8;
         }
 
         .item-checkbox {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             cursor: pointer;
             flex-shrink: 0;
+            accent-color: #6366f1;
         }
 
         .item-name {
@@ -244,103 +361,126 @@
         }
 
         .quantity-btn {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             color: inherit;
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 1.125rem;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
         }
 
         .quantity-btn:hover {
             background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
         }
 
         .quantity-btn:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
 
-        .item:not(.selected) .quantity-btn {
-            background: #e9ecef;
-            color: #333;
+        .item:not(.selected):not(.completed) .quantity-btn {
+            background: #f3f4f6;
+            color: #374151;
         }
 
         .quantity-display {
-            min-width: 32px;
+            min-width: 36px;
             text-align: center;
             font-weight: 600;
             font-size: 0.95rem;
             background: rgba(255,255,255,0.2);
-            padding: 4px 8px;
-            border-radius: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
         }
 
-        .item:not(.selected) .quantity-display {
-            background: #f8f9fa;
-            color: #333;
+        .item:not(.selected):not(.completed) .quantity-display {
+            background: #f9fafb;
+            color: #374151;
         }
 
         .item-status {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
             margin-left: 8px;
         }
 
         .item-remove {
-            background: #dc3545;
+            background: #ef4444;
             color: white;
             border: none;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.875rem;
+            font-weight: 600;
             display: none;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             margin-left: 8px;
+            transition: all 0.2s ease;
         }
 
         .edit-mode .item-remove {
             display: flex;
         }
 
+        .item-remove:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
         .item-remove:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
 
         .add-custom-item {
             display: flex;
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 16px;
         }
 
         .add-custom-item input {
             flex-grow: 1;
-            padding: 10px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-custom-item input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
         .add-custom-item button {
-            background: #28a745;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            min-width: 45px;
+            font-size: 1.125rem;
+            min-width: 48px;
             touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+
+        .add-custom-item button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .add-custom-item button:active {
@@ -350,15 +490,21 @@
         .saved-lists {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
         }
 
         .saved-list {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            transition: transform 0.3s ease;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+        }
+
+        .saved-list:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
         }
 
         .saved-list:active {
@@ -366,87 +512,99 @@
         }
 
         .saved-list h3 {
-            color: #333;
+            color: #1f2937;
             margin-bottom: 8px;
-            font-size: 1.1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
         }
 
         .saved-list-meta {
-            color: #666;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            font-weight: 400;
         }
 
         .saved-list-items {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .saved-item {
-            background: white;
-            padding: 6px 10px;
-            border-radius: 6px;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 6px;
-            font-size: 0.85rem;
+            gap: 8px;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .saved-item:hover {
+            background: #f1f5f9;
         }
 
         .saved-item.completed {
-            background: #d4edda;
+            background: #d1fae5;
             text-decoration: line-through;
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
         .saved-item-quantity {
-            background: #e9ecef;
-            color: #333;
-            padding: 2px 6px;
-            border-radius: 10px;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
-            min-width: 20px;
+            min-width: 24px;
             text-align: center;
         }
 
         .saved-item.completed .saved-item-quantity {
-            background: #c3e6cb;
+            background: #a7f3d0;
+            color: #065f46;
         }
 
         .list-actions {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
         .delete-list-btn, .shop-list-btn, .edit-list-btn {
             border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 500;
             touch-action: manipulation;
             flex: 1;
-            min-width: 100px;
+            transition: all 0.3s ease;
         }
 
         .delete-list-btn {
-            background: #dc3545;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
         }
 
         .shop-list-btn {
-            background: #ff9a56;
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
             color: white;
         }
 
         .edit-list-btn {
-            background: #f39c12;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
+        }
+
+        .delete-list-btn:hover, .shop-list-btn:hover, .edit-list-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .delete-list-btn:active, .shop-list-btn:active, .edit-list-btn:active {
@@ -454,143 +612,190 @@
         }
 
         .progress-bar {
-            background: #e9ecef;
-            border-radius: 10px;
+            background: #e5e7eb;
+            border-radius: 12px;
             height: 6px;
-            margin: 8px 0;
+            margin: 12px 0;
             overflow: hidden;
         }
 
         .progress-fill {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             height: 100%;
-            transition: width 0.3s ease;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .shopping-header, .edit-header {
             color: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shopping-header::before, .edit-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+            opacity: 0.3;
         }
 
         .shopping-header {
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
         }
 
         .edit-header {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
 
         .shopping-header h2, .edit-header h2 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
         }
 
         .shopping-progress {
-            margin: 12px 0;
+            margin: 16px 0;
+            position: relative;
+            z-index: 1;
         }
 
         .shopping-stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .stat {
             text-align: center;
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
         }
 
         .stat-number {
             font-size: 1.5rem;
-            font-weight: bold;
+            font-weight: 700;
             display: block;
+            margin-bottom: 4px;
         }
 
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             opacity: 0.9;
+            font-weight: 500;
         }
 
         .empty-state {
             text-align: center;
-            padding: 30px 15px;
-            color: #666;
+            padding: 40px 20px;
+            color: #6b7280;
         }
 
         .empty-state h3 {
             margin-bottom: 8px;
-            color: #333;
-            font-size: 1.1rem;
+            color: #374151;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
         }
 
         .save-button-container {
             text-align: center;
-            margin: 25px 0;
-            padding: 0 10px;
+            margin: 32px 0;
         }
 
         .save-button {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.1rem;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 1.125rem;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
             width: 100%;
-            max-width: 300px;
             touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
         }
 
         .save-button:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
 
         .save-button:disabled {
-            background: #6c757d;
+            background: #9ca3af;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         .finish-shopping-container, .finish-editing-container {
             text-align: center;
-            margin-top: 25px;
+            margin-top: 32px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding: 0 10px;
+            gap: 12px;
         }
 
         .finish-shopping-btn, .finish-editing-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
-            padding: 15px 25px;
-            border-radius: 25px;
-            font-size: 1.1rem;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 1.125rem;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
             touch-action: manipulation;
+            transition: all 0.3s ease;
         }
 
         .exit-shopping-btn, .exit-editing-btn {
-            background: #6c757d;
+            background: #6b7280;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
             touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+
+        .finish-shopping-btn:hover, .finish-editing-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+        }
+
+        .exit-shopping-btn:hover, .exit-editing-btn:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
         }
 
         .finish-shopping-btn:active, .exit-shopping-btn:active,
         .finish-editing-btn:active, .exit-editing-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
 
         .loading {
@@ -607,104 +812,100 @@
             to { transform: rotate(360deg); }
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .realtime-indicator {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             font-size: 0.75rem;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
         .pulse {
             width: 6px;
             height: 6px;
-            background: #28a745;
+            background: #10b981;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 1; }
-            70% { transform: scale(1); opacity: 0.7; }
-            100% { transform: scale(0.95); opacity: 1; }
-        }
-
-        /* Edit mode styles */
         .edit-mode-controls {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .edit-mode-controls h4 {
-            color: #856404;
+            color: #92400e;
             margin-bottom: 8px;
             font-size: 0.95rem;
+            font-weight: 600;
         }
 
         .edit-mode-controls p {
-            color: #856404;
-            font-size: 0.85rem;
+            color: #92400e;
+            font-size: 0.8rem;
             margin: 0;
         }
 
-        /* Responsive */
+        /* Responsive optimizations */
         @media screen and (max-width: 480px) {
             body {
-                padding: 5px;
-                font-size: 16px;
+                padding: 4px;
             }
 
             .container {
-                border-radius: 10px;
-                min-height: calc(100vh - 10px);
+                border-radius: 16px;
+                min-height: calc(100vh - 8px);
+            }
+
+            .header {
+                padding: 20px 16px;
             }
 
             .header h1 {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
             }
 
             .main-content {
-                padding: 12px;
+                padding: 16px;
             }
 
             .categories {
-                gap: 15px;
+                gap: 16px;
             }
 
             .category {
-                padding: 12px;
+                padding: 16px;
             }
 
             .item {
-                padding: 10px;
-                min-height: 44px;
+                padding: 12px;
+                min-height: 52px;
             }
 
             .item-name {
-                font-size: 0.9rem;
+                font-size: 0.875rem;
             }
 
             .shopping-stats {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                text-align: left;
+                gap: 12px;
             }
 
             .stat {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background: rgba(255,255,255,0.2);
-                padding: 8px 12px;
-                border-radius: 8px;
+                padding: 10px;
             }
 
             .stat-number {
-                font-size: 1.3rem;
+                font-size: 1.25rem;
             }
 
             .saved-list-items {
@@ -713,21 +914,33 @@
 
             .list-actions {
                 flex-direction: column;
-            }
-
-            .delete-list-btn, .shop-list-btn, .edit-list-btn {
-                min-width: auto;
+                gap: 8px;
             }
 
             .quantity-btn {
-                width: 24px;
-                height: 24px;
-                font-size: 0.9rem;
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
             }
 
             .quantity-display {
-                min-width: 28px;
-                font-size: 0.85rem;
+                min-width: 32px;
+                font-size: 0.875rem;
+                padding: 4px 8px;
+            }
+
+            .form-group input, .form-group select {
+                padding: 14px;
+            }
+
+            .nav-buttons {
+                gap: 8px;
+                padding: 2px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -735,679 +948,792 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛒 Lista de Supermercado Familiar</h1>
-            <p>Organizar compras con cantidades - ¡No olvides nada!</p>
-            <div class="connection-status">
-                <div class="status-indicator" id="connection-status"></div>
-                <span id="connection-text">Conectando...</span>
-                <div class="realtime-indicator">
-                    <div class="pulse"></div>
-                    <span>En tiempo real</span>
+            <div class="header-content">
+                <h1>🛒 Lista de Supermercado</h1>
+                <p>Familia con Orejas</p>
+                <div class="connection-status">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="connectionStatus">Conectando...</span>
                 </div>
             </div>
         </div>
 
         <div class="main-content">
             <div class="nav-buttons">
-                <button class="btn active touchable" onclick="showSection('new-list')">📝 Nueva Lista</button>
-                <button class="btn touchable" onclick="showSection('saved-lists')">📋 Listas Guardadas</button>
+                <button class="btn active" data-section="create"><span>📝 Crear Lista</span></button>
+                <button class="btn" data-section="saved"><span>💾 Listas Guardadas</span></button>
+                <button class="btn" data-section="shopping" id="shoppingBtn" style="display: none;"><span>🛍️ Comprar</span></button>
+                <button class="btn" data-section="edit" id="editBtn" style="display: none;"><span>✏️ Editar</span></button>
             </div>
 
-            <!-- Nueva Lista -->
-            <div id="new-list" class="section active">
+            <!-- Sección Crear Lista -->
+            <div id="create" class="section active">
                 <div class="form-group">
-                    <label for="list-name">Nombre de la lista:</label>
-                    <input type="text" id="list-name" placeholder="Ej: Lista quincenal, Compra para el asado...">
+                    <label for="listName">Nombre de la lista:</label>
+                    <input type="text" id="listName" placeholder="Ej: Compras del sábado" value="">
                 </div>
 
-                <div class="form-group">
-                    <label for="family-member">Creada por:</label>
-                    <select id="family-member">
-                        <option value="Papá">👨 BigBoss</option>
-                        <option value="Mamá">👩 Mamá</option>
-                        <option value="Hijo/a 1">👦 Javi</option>
-                        <option value="Hijo/a 2">👧 Dani</option>
-                        <option value="Otro">👤 Otro</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="list-date">Fecha:</label>
-                    <input type="date" id="list-date">
-                </div>
-
-                <div class="categories" id="categories-container">
+                <div class="categories" id="categories">
                     <!-- Las categorías se generarán dinámicamente -->
                 </div>
 
                 <div class="save-button-container">
-                    <button class="save-button touchable" onclick="saveList()" id="save-btn">
-                        💾 Guardar Lista
+                    <button class="save-button" id="saveList">
+                        <span id="saveButtonText">💾 Guardar Lista</span>
+                        <div class="loading" id="saveButtonLoading" style="display: none;"></div>
                     </button>
                 </div>
             </div>
 
-            <!-- Listas Guardadas -->
-            <div id="saved-lists" class="section">
-                <div id="saved-lists-container">
-                    <!-- Las listas guardadas se mostrarán aquí -->
+            <!-- Sección Listas Guardadas -->
+            <div id="saved" class="section">
+                <div class="saved-lists" id="savedLists">
+                    <div class="empty-state">
+                        <h3>No hay listas guardadas</h3>
+                        <p>Crea tu primera lista para comenzar</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Modo Compra -->
-            <div id="shopping-mode" class="section">
+            <!-- Sección Comprar -->
+            <div id="shopping" class="section">
                 <div class="shopping-header">
-                    <h2 id="shopping-list-name">🛒 Modo Compra</h2>
+                    <h2>🛍️ Modo Compra</h2>
                     <div class="shopping-progress">
                         <div class="progress-bar">
-                            <div class="progress-fill" id="shopping-progress"></div>
+                            <div class="progress-fill" id="shoppingProgress"></div>
                         </div>
-                    </div>
-                    <div class="shopping-stats">
-                        <div class="stat">
-                            <span class="stat-label">Completados</span>
-                            <span class="stat-number" id="completed-count">0</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Pendientes</span>
-                            <span class="stat-number" id="remaining-count">0</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Progreso</span>
-                            <span class="stat-number" id="progress-percent">0%</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Total Items</span>
-                            <span class="stat-number" id="total-quantity">0</span>
+                        <div class="shopping-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="completedCount">0</span>
+                                <span class="stat-label">Completados</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="totalCount">0</span>
+                                <span class="stat-label">Total</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="categories" id="shopping-categories-container">
-                    <!-- Las categorías para modo compra se generarán aquí -->
+                <div class="categories" id="shoppingCategories">
+                    <!-- Las categorías se generarán dinámicamente -->
                 </div>
 
                 <div class="finish-shopping-container">
-                    <button class="finish-shopping-btn touchable" onclick="finishShopping()">
+                    <button class="finish-shopping-btn" id="finishShopping">
                         ✅ Finalizar Compra
                     </button>
-                    <button class="exit-shopping-btn touchable" onclick="exitShoppingMode()">
-                        ← Volver a Listas
+                    <button class="exit-shopping-btn" id="exitShopping">
+                        🔙 Volver a Listas
                     </button>
                 </div>
             </div>
 
-            <!-- Modo Edición -->
-            <div id="edit-mode" class="section">
+            <!-- Sección Editar -->
+            <div id="edit" class="section">
                 <div class="edit-header">
-                    <h2 id="edit-list-name">✏️ Editar Lista</h2>
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label for="edit-list-name-input" style="color: white;">Nombre de la lista:</label>
-                        <input type="text" id="edit-list-name-input" style="margin-top: 8px;">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-family-member" style="color: white;">Editada por:</label>
-                        <select id="edit-family-member" style="margin-top: 8px;">
-                            <option value="Papá">👨 Papá</option>
-                            <option value="Mamá">👩 Mamá</option>
-                            <option value="Hijo/a 1">👦 Hijo/a 1</option>
-                            <option value="Hijo/a 2">👧 Hijo/a 2</option>
-                            <option value="Otro">👤 Otro</option>
-                        </select>
+                    <h2>✏️ Editar Lista</h2>
+                    <div class="realtime-indicator">
+                        <div class="pulse"></div>
+                        <span>Cambios en tiempo real</span>
                     </div>
                 </div>
 
                 <div class="edit-mode-controls">
-                    <h4>🎯 Modo Edición Activado</h4>
-                    <p>Puedes agregar nuevos elementos, eliminar existentes con ❌, y cambiar cantidades con + / -</p>
+                    <h4>Modo Edición Activado</h4>
+                    <p>Puedes agregar, quitar items y cambiar cantidades</p>
                 </div>
 
-                <div class="categories edit-mode" id="edit-categories-container">
-                    <!-- Las categorías para modo edición se generarán aquí -->
+                <div class="form-group">
+                    <label for="editListName">Nombre de la lista:</label>
+                    <input type="text" id="editListName" placeholder="Ej: Compras del sábado">
+                </div>
+
+                <div class="categories edit-mode" id="editCategories">
+                    <!-- Las categorías se generarán dinámicamente -->
                 </div>
 
                 <div class="finish-editing-container">
-                    <button class="finish-editing-btn touchable" onclick="saveEditedList()">
+                    <button class="finish-editing-btn" id="finishEditing">
                         💾 Guardar Cambios
                     </button>
-                    <button class="exit-editing-btn touchable" onclick="exitEditMode()">
-                        ← Cancelar Edición
+                    <button class="exit-editing-btn" id="exitEditing">
+                        🔙 Volver a Listas
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Supabase JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.0/umd/index.min.js"></script>
-
     <script>
-        // Configuración de Supabase
-        const SUPABASE_URL = 'https://fkbibznxasdkzrrqecul.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYmliem54YXNka3pycnFlY3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MTUxNDcsImV4cCI6MjA2Njk5MTE0N30.usnm1yQ3dWdjvUHPW3YZmL3WQQJyp6lD3ot8IqmpSwA';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Configuración Supabase
+        const supabaseUrl = 'https://fkbibznxasdkzrrqecul.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYmliem54YXNka3pycnFlY3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0MTUxNDcsImV4cCI6MjA2Njk5MTE0N30.usnm1yQ3dWdjvUHPW3YZmL3WQQJyp6lD3ot8IqmpSwA';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Variables globales
-        let currentShoppingList = null;
-        let currentEditingList = null;
+        // Estado de la aplicación
+        let currentUser = null;
+        let currentList = null;
+        let currentMode = 'create';
         let isConnected = false;
 
-        // Productos por categoría
-        const products = {
-            vegetables: ['Tomate', 'Cebolla', 'Ajo', 'Zanahoria', 'Lechuga', 'Pepino', 'Palta','Betarraga','coliflor','Brocoli','Zapallo amarillo','Zapallo italiano','Repollo','Morron','Cebollín','Cilantro','champiñon','Acelga','Ají verde','Limones','Choclo','Apío','Cochayuyo','Papa','Alcachofa','Jengibre','Espinaca'],
-             fruits: ['Manzana', 'Plátano', 'Naranja', 'Limón', 'Frutilla', 'Uva', 'Pera','Sandía','Melón','Kiwi','Pomelo','Mango','Membrillo'],
-             meat: ['Pollo', 'Carne molida','Carne a la olla','Carne a la parrilla', 'Escalopa', 'Bistec', 'Cerdo', 'Pescado', 'Jamón', 'Salchichas','Salame','Pepinillos','Aceitunas'],
-            dairy: ['Leche', 'Queso', 'Yogurt', 'Mantequilla', 'Crema', 'Queso crema', 'Postres','Leche cultivada','Leche condensada','Leche evaporada','Manjar','Queso rallado','Huevos'],
-            abarrotes : ['Aceite', 'Sal', 'Azúcar', 'Harinas con/sin','Aceite de oliva','Aceto balsamico','Vinagre tinto','Vinagre de manzana','Ketchup','Mostaza','Mayonessa','Jalea en polvo','postres en polvo','Mermelada','Polvo de hornear','Maicena','Pan rayado','Pan de molde','Quezadillas,','Palmitos','Jurel','Atún','Durazno','Puré','Salsa de tomate','Cereal','Natur','Galletas','Chocolate margo','Chocolate dulce','Snacks','Sopas','Bases pollo crispy','Base pollo mediterranio','Base de cazuela','Endulzante', 'Ají en pasta','Dulce membrillo'],
-            
-           
-            grains: ['Arroz', 'Pasta', 'Pan', 'Avena', 'Quinoa', 'Lentejas', 'Mote','Poroto','Garbanzo','Porotos granados','Lasagna'],
-            condimentos : ['Ajo en polvo', 'Oregano','Romero','Papikra','Ají color','Cebolla en polvo', 'Sesamo','Curcuma','Merkén','Pimienta','Clavo de olor','Laurel','Canela','Calugas maggi','Jengibre en polvo','Nuez Moscada','Vainilla','Salsa soya','Salsa inglesa','Salsa de tabasco','Anís'],
-            beverages: ['Agua', 'Jugo', 'Bebida', 'Café', 'Té', 'Vino', 'Cerveza','Tragos','Té papa','Aguas dani','Agua Bidon'],
-            cleaning: ['Detergente', 'Cloro', 'Jabón', 'Papel higiénico', 'Shampoo', 'Pasta dental','Acondicionador','Quiz','Limpia vidrios','Crema de baño','Lustra mueble','Bolsa de basura','Esponja','Suavizante','Jabon en barra', 'Jabon liquido','Virutilla','Anti grasa','Escoba','Poett','Cepillo de diente','desodorante hombre','Desodorante mujer','Maquina de afeitar','Maquina de depilación','Crema de cara','Crema de cuerpo','Toallas higienicas','Nova','Cervilletas'],
-            Javier : ['Papitas fritas','Postres ricos','Bebidas','Chocolate','Nutella','Viajar a iquique','Mesada de 100mil'],
-            Copito : ['Comida','Snacks']
-            
-        };
-
-        const categoryNames = {
-            dairy: '🥛 Lácteos',
-            meat: '🥩 Carnes',
-            vegetables: '🥬 Vegetales',
-            fruits: '🍎 Frutas',
-            grains: '🌾 Granos',
-            beverages: '🥤 Bebidas',
-            cleaning: '🧽 Limpieza',
-            condimentos: '🧂 Condimentos',
-            abarrotes: '📦 Abarrotes',
-            Javier: 'Exclusive Javier',
-            Copito: '🐕 Copito'
+        // Categorías predefinidas con items
+        const categories = {
+            dairy: {
+                name: 'Lácteos',
+                icon: '🥛',
+                items: ['Leche', 'Yogur', 'Queso', 'Mantequilla', 'Crema', 'Queso crema']
+            },
+            meat: {
+                name: 'Carnes',
+                icon: '🥩',
+                items: ['Pollo', 'Carne molida', 'Bistec', 'Pescado', 'Jamón', 'Salchichas']
+            },
+            vegetables: {
+                name: 'Verduras',
+                icon: '🥬',
+                items: ['Lechuga', 'Tomate', 'Cebolla', 'Zanahoria', 'Pepino', 'Pimentón']
+            },
+            fruits: {
+                name: 'Frutas',
+                icon: '🍎',
+                items: ['Manzana', 'Plátano', 'Naranja', 'Limón', 'Palta', 'Uvas']
+            },
+            grains: {
+                name: 'Cereales',
+                icon: '🌾',
+                items: ['Arroz', 'Fideos', 'Pan', 'Avena', 'Quinoa', 'Harina']
+            },
+            beverages: {
+                name: 'Bebidas',
+                icon: '🥤',
+                items: ['Agua', 'Jugo', 'Bebida', 'Café', 'Té', 'Cerveza']
+            },
+            cleaning: {
+                name: 'Limpieza',
+                icon: '🧽',
+                items: ['Detergente', 'Cloro', 'Jabón', 'Papel higiénico', 'Toallas papel', 'Desinfectante']
+            },
+            condimentos: {
+                name: 'Condimentos',
+                icon: '🧂',
+                items: ['Sal', 'Aceite', 'Vinagre', 'Ajo', 'Orégano', 'Mayonesa']
+            },
+            abarrotes: {
+                name: 'Abarrotes',
+                icon: '🏪',
+                items: ['Azúcar', 'Lenteja', 'Porotos', 'Atún', 'Conservas', 'Galletas']
+            },
+            Javier: {
+                name: 'Javier',
+                icon: '👨',
+                items: ['Shampoo', 'Desodorante', 'Pasta dental', 'Jabón', 'Crema afeitar', 'Vitaminas']
+            },
+            Copito: {
+                name: 'Copito',
+                icon: '🐕',
+                items: ['Comida perro', 'Premios', 'Champú mascotas', 'Juguetes', 'Correa', 'Collar']
+            }
         };
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
-            checkConnection();
-            setInterval(checkConnection, 30000); // Verificar conexión cada 30 segundos
+            setupEventListeners();
+            renderCategories();
         });
 
+        // Configuración inicial
         async function initializeApp() {
-            // Establecer fecha actual
-            document.getElementById('list-date').value = new Date().toISOString().split('T')[0];
-            
-            // Generar categorías
-            generateCategories();
-            
-            // Cargar listas guardadas
-            await loadSavedLists();
-            
-            // Configurar realtime
-            setupRealtimeSubscription();
-        }
-
-        async function checkConnection() {
             try {
-                const { data, error } = await supabase.from('shopping_lists').select('id').limit(1);
+                // Verificar conexión
+                const { data, error } = await supabase.from('shopping_lists').select('count', { count: 'exact' });
+                if (error) throw error;
+                
                 updateConnectionStatus(true);
-                isConnected = true;
+                loadSavedLists();
             } catch (error) {
+                console.error('Error inicializando:', error);
                 updateConnectionStatus(false);
-                isConnected = false;
             }
         }
 
+        // Actualizar estado de conexión
         function updateConnectionStatus(connected) {
-            const indicator = document.getElementById('connection-status');
-            const text = document.getElementById('connection-text');
+            isConnected = connected;
+            const indicator = document.getElementById('statusIndicator');
+            const status = document.getElementById('connectionStatus');
             
             if (connected) {
-                indicator.classList.remove('disconnected');
-                text.textContent = 'Conectado';
+                indicator.className = 'status-indicator';
+                status.textContent = 'Conectado';
             } else {
-                indicator.classList.add('disconnected');
-                text.textContent = 'Sin conexión';
+                indicator.className = 'status-indicator disconnected';
+                status.textContent = 'Sin conexión';
             }
         }
 
-        function setupRealtimeSubscription() {
-            supabase
-                .channel('shopping_lists')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'shopping_lists' },
-                    (payload) => {
-                        console.log('Cambio detectado:', payload);
-                        loadSavedLists();
-                    }
-                )
-                .subscribe();
-        }
-
-        function generateCategories() {
-            const container = document.getElementById('categories-container');
-            container.innerHTML = '';
-
-            Object.entries(products).forEach(([category, items]) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = `category ${category}`;
-                categoryDiv.innerHTML = `
-                    <h3>${categoryNames[category]}</h3>
-                    <div class="category-items">
-                        ${items.map(item => `
-                            <div class="item" data-category="${category}" data-name="${item}">
-                                <input type="checkbox" class="item-checkbox" onchange="toggleItem(this)">
-                                <span class="item-name">${item}</span>
-                                <div class="item-quantity-controls">
-                                    <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
-                                    <span class="quantity-display">1</span>
-                                    <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                                </div>
-                                <span class="item-status">📋</span>
-                                <button class="item-remove" onclick="removeItem(this)">×</button>
-                            </div>
-                        `).join('')}
-                        <div class="add-custom-item">
-                            <input type="text" placeholder="Agregar producto personalizado..." onkeypress="addCustomItemOnEnter(event, '${category}')">
-                            <button onclick="addCustomItem(this, '${category}')">+</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(categoryDiv);
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Navegación
+            document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    switchSection(section);
+                });
             });
+
+            // Guardar lista
+            document.getElementById('saveList').addEventListener('click', saveCurrentList);
+
+            // Botones de compra
+            document.getElementById('finishShopping').addEventListener('click', finishShopping);
+            document.getElementById('exitShopping').addEventListener('click', () => switchSection('saved'));
+
+            // Botones de edición
+            document.getElementById('finishEditing').addEventListener('click', finishEditing);
+            document.getElementById('exitEditing').addEventListener('click', () => switchSection('saved'));
         }
 
-        function showSection(sectionId, button = null) {
-        // Ocultar todas las secciones
-        document.querySelectorAll('.section').forEach(section => {
-            section.classList.remove('active');
-        });
+        // Cambiar sección
+        function switchSection(section) {
+            // Actualizar botones
+            document.querySelectorAll('.nav-buttons .btn').forEach(btn => {
+                btn.classList.remove('active', 'shopping-mode', 'edit-mode');
+                if (btn.dataset.section === section) {
+                    btn.classList.add('active');
+                    if (section === 'shopping') btn.classList.add('shopping-mode');
+                    if (section === 'edit') btn.classList.add('edit-mode');
+                }
+            });
 
-        // Remover clase active de todos los botones
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
+            // Mostrar sección
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(section).classList.add('active');
 
-        // Mostrar sección seleccionada
-        document.getElementById(sectionId).classList.add('active');
+            currentMode = section;
 
-        // Activar botón correspondiente si existe
-        if (button) {
-            button.classList.add('active');
-        }
-
-
-            // Cargar datos específicos de la sección
-            if (sectionId === 'saved-lists') {
+            // Cargar datos específicos según la sección
+            if (section === 'saved') {
                 loadSavedLists();
             }
         }
 
-        function toggleItem(checkbox) {
-            const item = checkbox.closest('.item');
+        // Renderizar categorías
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            container.innerHTML = '';
+
+            Object.entries(categories).forEach(([categoryId, category]) => {
+                const categoryEl = createCategoryElement(categoryId, category);
+                container.appendChild(categoryEl);
+            });
+        }
+
+        // Crear elemento de categoría
+        function createCategoryElement(categoryId, category) {
+            const categoryEl = document.createElement('div');
+            categoryEl.className = `category ${categoryId}`;
             
-            if (checkbox.checked) {
-                item.classList.add('selected');
-                item.querySelector('.item-status').textContent = '✅';
-            } else {
-                item.classList.remove('selected');
-                item.querySelector('.item-status').textContent = '📋';
+            const title = document.createElement('h3');
+            title.innerHTML = `${category.icon} ${category.name}`;
+            categoryEl.appendChild(title);
+
+            category.items.forEach(item => {
+                const itemEl = createItemElement(item, categoryId);
+                categoryEl.appendChild(itemEl);
+            });
+
+            // Agregar control para items personalizados
+            const customItemControl = createCustomItemControl(categoryId);
+            categoryEl.appendChild(customItemControl);
+
+            return categoryEl;
+        }
+
+        // Crear elemento de item
+        function createItemElement(itemName, categoryId, quantity = 1, completed = false) {
+            const itemEl = document.createElement('div');
+            itemEl.className = `item ${completed ? 'completed' : ''}`;
+            itemEl.dataset.item = itemName;
+            itemEl.dataset.category = categoryId;
+
+            // Checkbox (solo en modo compra)
+            if (currentMode === 'shopping') {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'item-checkbox';
+                checkbox.checked = completed;
+                checkbox.addEventListener('change', function() {
+                    toggleItemCompletion(itemEl, this.checked);
+                });
+                itemEl.appendChild(checkbox);
             }
-        }
 
-        function changeQuantity(button, change) {
-            const quantityDisplay = button.parentElement.querySelector('.quantity-display');
-            let currentQuantity = parseInt(quantityDisplay.textContent);
-            let newQuantity = Math.max(1, currentQuantity + change);
-            quantityDisplay.textContent = newQuantity;
-        }
+            // Nombre del item
+            const nameEl = document.createElement('span');
+            nameEl.className = 'item-name';
+            nameEl.textContent = itemName;
+            itemEl.appendChild(nameEl);
 
-        function removeItem(button) {
-            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-                button.closest('.item').remove();
+            // Controles de cantidad
+            const quantityControls = document.createElement('div');
+            quantityControls.className = 'item-quantity-controls';
+
+            const decreaseBtn = document.createElement('button');
+            decreaseBtn.className = 'quantity-btn';
+            decreaseBtn.innerHTML = '−';
+            decreaseBtn.addEventListener('click', () => updateQuantity(itemEl, -1));
+
+            const quantityDisplay = document.createElement('span');
+            quantityDisplay.className = 'quantity-display';
+            quantityDisplay.textContent = quantity;
+
+            const increaseBtn = document.createElement('button');
+            increaseBtn.className = 'quantity-btn';
+            increaseBtn.innerHTML = '+';
+            increaseBtn.addEventListener('click', () => updateQuantity(itemEl, 1));
+
+            quantityControls.appendChild(decreaseBtn);
+            quantityControls.appendChild(quantityDisplay);
+            quantityControls.appendChild(increaseBtn);
+
+            itemEl.appendChild(quantityControls);
+
+            // Botón de eliminar (solo en modo edición)
+            if (currentMode === 'edit') {
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'item-remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.addEventListener('click', () => removeItem(itemEl));
+                itemEl.appendChild(removeBtn);
             }
+
+            // Click en el item para seleccionar
+            itemEl.addEventListener('click', function(e) {
+                if (e.target.classList.contains('quantity-btn') || 
+                    e.target.classList.contains('item-checkbox') ||
+                    e.target.classList.contains('item-remove')) {
+                    return;
+                }
+                toggleItemSelection(itemEl);
+            });
+
+            return itemEl;
         }
 
-        function addCustomItemOnEnter(event, category) {
-            if (event.key === 'Enter') {
-                addCustomItem(event.target.nextElementSibling, category);
-            }
+        // Crear control para items personalizados
+        function createCustomItemControl(categoryId) {
+            const container = document.createElement('div');
+            container.className = 'add-custom-item';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Agregar item personalizado...';
+
+            const addBtn = document.createElement('button');
+            addBtn.innerHTML = '+';
+            addBtn.addEventListener('click', () => addCustomItem(categoryId, input));
+
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addCustomItem(categoryId, input);
+                }
+            });
+
+            container.appendChild(input);
+            container.appendChild(addBtn);
+
+            return container;
         }
 
-        function addCustomItem(button, category) {
-            const input = button.previousElementSibling;
+        // Agregar item personalizado
+        function addCustomItem(categoryId, input) {
             const itemName = input.value.trim();
+            if (!itemName) return;
+
+            const category = document.querySelector(`#categories .category.${categoryId}`);
+            if (!category) return;
+
+            const itemEl = createItemElement(itemName, categoryId);
+            category.insertBefore(itemEl, category.lastElementChild);
+
+            input.value = '';
+            toggleItemSelection(itemEl);
+        }
+
+        // Alternar selección de item
+        function toggleItemSelection(itemEl) {
+            if (currentMode === 'shopping') return;
             
-            if (itemName) {
-                const categoryDiv = button.closest('.category');
-                const itemsContainer = categoryDiv.querySelector('.category-items');
-                const addItemDiv = categoryDiv.querySelector('.add-custom-item');
-                
-                const newItemDiv = document.createElement('div');
-                newItemDiv.className = 'item';
-                newItemDiv.setAttribute('data-category', category);
-                newItemDiv.setAttribute('data-name', itemName);
-                newItemDiv.innerHTML = `
-                    <input type="checkbox" class="item-checkbox" onchange="toggleItem(this)">
-                    <span class="item-name">${itemName}</span>
-                    <div class="item-quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
-                        <span class="quantity-display">1</span>
-                        <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                    </div>
-                    <span class="item-status">📋</span>
-                    <button class="item-remove" onclick="removeItem(this)">×</button>
-                `;
-                
-                itemsContainer.insertBefore(newItemDiv, addItemDiv);
-                input.value = '';
+            const isSelected = itemEl.classList.contains('selected');
+            const quantityDisplay = itemEl.querySelector('.quantity-display');
+            
+            if (isSelected) {
+                itemEl.classList.remove('selected');
+                quantityDisplay.textContent = '1';
+            } else {
+                itemEl.classList.add('selected');
             }
         }
 
-        async function saveList() {
-            const listName = document.getElementById('list-name').value.trim();
-            const familyMember = document.getElementById('family-member').value;
-            const listDate = document.getElementById('list-date').value;
+        // Actualizar cantidad
+        function updateQuantity(itemEl, change) {
+            const quantityDisplay = itemEl.querySelector('.quantity-display');
+            let quantity = parseInt(quantityDisplay.textContent) + change;
+            
+            if (quantity < 1) quantity = 1;
+            if (quantity > 99) quantity = 99;
+            
+            quantityDisplay.textContent = quantity;
+            
+            if (currentMode === 'create' && quantity > 1) {
+                itemEl.classList.add('selected');
+            }
+        }
+
+        // Eliminar item
+        function removeItem(itemEl) {
+            itemEl.remove();
+        }
+
+        // Alternar completado en modo compra
+        function toggleItemCompletion(itemEl, completed) {
+            if (completed) {
+                itemEl.classList.add('completed');
+                itemEl.classList.remove('selected');
+            } else {
+                itemEl.classList.remove('completed');
+            }
+            updateShoppingProgress();
+        }
+
+        // Actualizar progreso de compra
+        function updateShoppingProgress() {
+            const items = document.querySelectorAll('#shoppingCategories .item');
+            const completedItems = document.querySelectorAll('#shoppingCategories .item.completed');
+            
+            const total = items.length;
+            const completed = completedItems.length;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            
+            document.getElementById('shoppingProgress').style.width = progress + '%';
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        // Guardar lista actual
+        async function saveCurrentList() {
+            const listName = document.getElementById('listName').value.trim();
+            const selectedItems = getSelectedItems();
             
             if (!listName) {
                 alert('Por favor ingresa un nombre para la lista');
                 return;
             }
             
-            const selectedItems = [];
-            document.querySelectorAll('.item input[type="checkbox"]:checked').forEach(checkbox => {
-                const item = checkbox.closest('.item');
-                const itemData = {
-                    name: item.dataset.name,
-                    category: item.dataset.category,
-                    quantity: parseInt(item.querySelector('.quantity-display').textContent),
-                    completed: false
-                };
-                selectedItems.push(itemData);
-            });
-            
             if (selectedItems.length === 0) {
-                alert('Por favor selecciona al menos un producto');
+                alert('Por favor selecciona al menos un item');
                 return;
             }
+
+            const saveBtn = document.getElementById('saveList');
+            const saveText = document.getElementById('saveButtonText');
+            const saveLoading = document.getElementById('saveButtonLoading');
             
-            const saveBtn = document.getElementById('save-btn');
             saveBtn.disabled = true;
-            saveBtn.innerHTML = '<div class="loading"></div> Guardando...';
-            
+            saveText.style.display = 'none';
+            saveLoading.style.display = 'inline-block';
+
             try {
                 const { data, error } = await supabase
                     .from('shopping_lists')
                     .insert([{
                         name: listName,
-                        created_by: familyMember,
-                        list_date: listDate,
                         items: selectedItems,
                         created_at: new Date().toISOString()
                     }]);
-                
+
                 if (error) throw error;
-                
-                alert('¡Lista guardada exitosamente!');
-                clearForm();
-                await loadSavedLists();
-                showSection('saved-lists');
+
+                alert('Lista guardada exitosamente');
+                resetCreateForm();
+                loadSavedLists();
                 
             } catch (error) {
                 console.error('Error guardando lista:', error);
-                alert('Error al guardar la lista. Por favor intenta de nuevo.');
+                alert('Error al guardar la lista');
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '💾 Guardar Lista';
+                saveText.style.display = 'inline-block';
+                saveLoading.style.display = 'none';
             }
         }
 
-        function clearForm() {
-            document.getElementById('list-name').value = '';
-            document.getElementById('list-date').value = new Date().toISOString().split('T')[0];
+        // Obtener items seleccionados
+        function getSelectedItems() {
+            const selectedItems = [];
+            const items = document.querySelectorAll('#categories .item.selected, #categories .item[data-quantity]');
             
-            // Deseleccionar todos los items y resetear cantidades
-            document.querySelectorAll('.item').forEach(item => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                checkbox.checked = false;
+            items.forEach(item => {
+                const name = item.querySelector('.item-name').textContent;
+                const quantity = parseInt(item.querySelector('.quantity-display').textContent);
+                const category = item.dataset.category;
+                
+                if (item.classList.contains('selected') || quantity > 1) {
+                    selectedItems.push({
+                        name,
+                        quantity,
+                        category,
+                        completed: false
+                    });
+                }
+            });
+            
+            return selectedItems;
+        }
+
+        // Resetear formulario de crear
+        function resetCreateForm() {
+            document.getElementById('listName').value = '';
+            document.querySelectorAll('#categories .item').forEach(item => {
                 item.classList.remove('selected');
-                item.querySelector('.item-status').textContent = '📋';
                 item.querySelector('.quantity-display').textContent = '1';
             });
         }
 
+        // Cargar listas guardadas
         async function loadSavedLists() {
-            const container = document.getElementById('saved-lists-container');
+            const container = document.getElementById('savedLists');
             
             try {
-                const { data: lists, error } = await supabase
+                const { data, error } = await supabase
                     .from('shopping_lists')
                     .select('*')
                     .order('created_at', { ascending: false });
-                
+
                 if (error) throw error;
-                
-                if (lists.length === 0) {
+
+                if (data.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
-                            <h3>📝 No hay listas guardadas</h3>
-                            <p>Crea tu primera lista de compras para comenzar</p>
+                            <h3>No hay listas guardadas</h3>
+                            <p>Crea tu primera lista para comenzar</p>
                         </div>
                     `;
                     return;
                 }
-                
-                container.innerHTML = lists.map(list => {
-                    const totalItems = list.items.length;
-                    const completedItems = list.items.filter(item => item.completed).length;
-                    const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-                    
-                    return `
-                        <div class="saved-list">
-                            <h3>${list.name}</h3>
-                            <div class="saved-list-meta">
-                                📅 ${new Date(list.list_date).toLocaleDateString('es-ES')} • 
-                                👤 ${list.created_by} • 
-                                📦 ${totalItems} productos
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progress}%"></div>
-                            </div>
-                            <div class="saved-list-items">
-                                ${list.items.slice(0, 6).map(item => `
-                                    <div class="saved-item ${item.completed ? 'completed' : ''}">
-                                        <span>${item.name}</span>
-                                        <span class="saved-item-quantity">${item.quantity}</span>
-                                    </div>
-                                `).join('')}
-                                ${list.items.length > 6 ? `<div class="saved-item">... y ${list.items.length - 6} más</div>` : ''}
-                            </div>
-                            <div class="list-actions">
-                                <button class="shop-list-btn touchable" onclick="startShopping('${list.id}')">🛒 Comprar</button>
-                                <button class="edit-list-btn touchable" onclick="editList('${list.id}')">✏️ Editar</button>
-                                <button class="delete-list-btn touchable" onclick="deleteList('${list.id}')">🗑️ Eliminar</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+
+                container.innerHTML = '';
+                data.forEach(list => {
+                    const listEl = createSavedListElement(list);
+                    container.appendChild(listEl);
+                });
                 
             } catch (error) {
                 console.error('Error cargando listas:', error);
                 container.innerHTML = `
                     <div class="empty-state">
-                        <h3>❌ Error al cargar listas</h3>
-                        <p>No se pudieron cargar las listas guardadas</p>
+                        <h3>Error al cargar listas</h3>
+                        <p>Revisa tu conexión a internet</p>
                     </div>
                 `;
             }
         }
 
-        async function deleteList(listId) {
-            if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
-                return;
-            }
+// Crear elemento de lista guardada
+        function createSavedListElement(list) {
+            const listEl = document.createElement('div');
+            listEl.className = 'saved-list';
+            listEl.dataset.listId = list.id;
+
+            const title = document.createElement('h3');
+            title.textContent = list.name;
+            listEl.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'saved-list-meta';
+            const createdDate = new Date(list.created_at).toLocaleDateString();
+            const completedItems = list.items.filter(item => item.completed).length;
+            const totalItems = list.items.length;
+            meta.innerHTML = `Creada el ${createdDate} • ${completedItems}/${totalItems} completados`;
+            listEl.appendChild(meta);
+
+            // Progreso
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            const progressFill = document.createElement('div');
+            progressFill.className = 'progress-fill';
+            progressFill.style.width = totalItems > 0 ? (completedItems / totalItems) * 100 + '%' : '0%';
+            progressBar.appendChild(progressFill);
+            listEl.appendChild(progressBar);
+
+            // Items de la lista
+            const itemsContainer = document.createElement('div');
+            itemsContainer.className = 'saved-list-items';
+            list.items.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = `saved-item ${item.completed ? 'completed' : ''}`;
+                itemEl.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="saved-item-quantity">${item.quantity}</span>
+                `;
+                itemsContainer.appendChild(itemEl);
+            });
+            listEl.appendChild(itemsContainer);
+
+            // Botones de acción
+            const actions = document.createElement('div');
+            actions.className = 'list-actions';
+
+            const shopBtn = document.createElement('button');
+            shopBtn.className = 'shop-list-btn';
+            shopBtn.innerHTML = '🛍️ Comprar';
+            shopBtn.addEventListener('click', () => startShopping(list));
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-list-btn';
+            editBtn.innerHTML = '✏️ Editar';
+            editBtn.addEventListener('click', () => startEditing(list));
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-list-btn';
+            deleteBtn.innerHTML = '🗑️ Eliminar';
+            deleteBtn.addEventListener('click', () => deleteList(list.id));
+
+            actions.appendChild(shopBtn);
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            listEl.appendChild(actions);
+
+            return listEl;
+        }
+
+        // Iniciar modo compra
+        function startShopping(list) {
+            currentList = { ...list };
             
-            try {
-                const { error } = await supabase
-                    .from('shopping_lists')
-                    .delete()
-                    .eq('id', listId);
-                
-                if (error) throw error;
-                
-                await loadSavedLists();
-            } catch (error) {
-                console.error('Error eliminando lista:', error);
-                alert('Error al eliminar la lista');
-            }
-        }
-
-        async function startShopping(listId) {
-            try {
-                const { data: list, error } = await supabase
-                    .from('shopping_lists')
-                    .select('*')
-                    .eq('id', listId)
-                    .single();
-                
-                if (error) throw error;
-                
-                currentShoppingList = list;
-                setupShoppingMode();
-                showShoppingSection();
-                
-            } catch (error) {
-                console.error('Error iniciando compra:', error);
-                alert('Error al iniciar modo compra');
-            }
-        }
-
-        function setupShoppingMode() {
-            const listNameElement = document.getElementById('shopping-list-name');
-            listNameElement.textContent = `🛒 ${currentShoppingList.name}`;
+            // Mostrar botón de compra en navegación
+            document.getElementById('shoppingBtn').style.display = 'block';
             
-            generateShoppingCategories();
-            updateShoppingStats();
+            // Cambiar a modo compra
+            switchSection('shopping');
+            
+            // Renderizar categorías para compra
+            renderShoppingCategories();
+            
+            // Actualizar progreso
+            updateShoppingProgress();
         }
 
-        function generateShoppingCategories() {
-            const container = document.getElementById('shopping-categories-container');
+        // Renderizar categorías para compra
+        function renderShoppingCategories() {
+            const container = document.getElementById('shoppingCategories');
             container.innerHTML = '';
-            
+
             // Agrupar items por categoría
             const itemsByCategory = {};
-            currentShoppingList.items.forEach(item => {
+            currentList.items.forEach(item => {
                 if (!itemsByCategory[item.category]) {
                     itemsByCategory[item.category] = [];
                 }
                 itemsByCategory[item.category].push(item);
             });
-            
-            Object.entries(itemsByCategory).forEach(([category, items]) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = `category ${category}`;
-                categoryDiv.innerHTML = `
-                    <h3>${categoryNames[category]}</h3>
-                    <div class="category-items">
-                        ${items.map((item, index) => `
-                            <div class="item ${item.completed ? 'completed' : ''}" data-item-index="${currentShoppingList.items.indexOf(item)}">
-                                <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleShoppingItem(this)">
-                                <span class="item-name">${item.name}</span>
-                                <div class="item-quantity-controls">
-                                    <span class="quantity-display">${item.quantity}</span>
-                                </div>
-                                <span class="item-status">${item.completed ? '✅' : '🛒'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                container.appendChild(categoryDiv);
-            });
-        }
 
-        async function toggleShoppingItem(checkbox) {
-            const item = checkbox.closest('.item');
-            const itemIndex = parseInt(item.dataset.itemIndex);
-            
-            currentShoppingList.items[itemIndex].completed = checkbox.checked;
-            
-            if (checkbox.checked) {
-                item.classList.add('completed');
-                item.querySelector('.item-status').textContent = '✅';
-            } else {
-                item.classList.remove('completed');
-                item.querySelector('.item-status').textContent = '🛒';
-            }
-            
-            updateShoppingStats();
-            
-            // Guardar cambios en la base de datos
-            try {
-                await supabase
-                    .from('shopping_lists')
-                    .update({ items: currentShoppingList.items })
-                    .eq('id', currentShoppingList.id);
-            } catch (error) {
-                console.error('Error actualizando item:', error);
-            }
-        }
+            // Crear categorías
+            Object.entries(itemsByCategory).forEach(([categoryId, items]) => {
+                const category = categories[categoryId];
+                if (!category) return;
 
-        function updateShoppingStats() {
-            const totalItems = currentShoppingList.items.length;
-            const completedItems = currentShoppingList.items.filter(item => item.completed).length;
-            const remainingItems = totalItems - completedItems;
-            const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-            const totalQuantity = currentShoppingList.items.reduce((sum, item) => sum + item.quantity, 0);
-            
-            document.getElementById('completed-count').textContent = completedItems;
-            document.getElementById('remaining-count').textContent = remainingItems;
-            document.getElementById('progress-percent').textContent = `${progress}%`;
-            document.getElementById('total-quantity').textContent = totalQuantity;
-            document.getElementById('shopping-progress').style.width = `${progress}%`;
-        }
-
-        function showShoppingSection() {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Mostrar modo compra
-            document.getElementById('shopping-mode').classList.add('active');
-            
-            // Actualizar botones de navegación
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.classList.remove('active', 'shopping-mode');
-            });
-            
-            // Crear botón temporal de modo compra si no existe
-            const navButtons = document.querySelector('.nav-buttons');
-            let shoppingBtn = navButtons.querySelector('.shopping-mode-btn');
-            if (!shoppingBtn) {
-                shoppingBtn = document.createElement('button');
-                shoppingBtn.className = 'btn shopping-mode shopping-mode-btn active';
-                shoppingBtn.innerHTML = '🛒 Modo Compra';
-                shoppingBtn.onclick = () => showShoppingSection();
-                navButtons.appendChild(shoppingBtn);
-            } else {
-                shoppingBtn.classList.add('active');
-            }
-        }
-
-        async function finishShopping() {
-            if (!confirm('¿Finalizar compra? Esto marcará la lista como completada. LUEGO NO QUIERO EN LA CASA DICIENDO QUE LES FALTO ALGO!')) {
-                return;
-            }
-            
-            try {
-                await supabase
-                    .from('shopping_lists')
-                    .update({ 
-                        completed: true,
-                        completed_at: new Date().toISOString()
-                    })
-                    .eq('id', currentShoppingList.id);
+                const categoryEl = document.createElement('div');
+                categoryEl.className = `category ${categoryId}`;
                 
-                alert('¡Compra finalizada exitosamente!');
-                exitShoppingMode();
+                const title = document.createElement('h3');
+                title.innerHTML = `${category.icon} ${category.name}`;
+                categoryEl.appendChild(title);
+
+                items.forEach(item => {
+                    const itemEl = createShoppingItemElement(item, categoryId);
+                    categoryEl.appendChild(itemEl);
+                });
+
+                container.appendChild(categoryEl);
+            });
+        }
+
+        // Crear elemento de item para compra
+        function createShoppingItemElement(item, categoryId) {
+            const itemEl = document.createElement('div');
+            itemEl.className = `item ${item.completed ? 'completed' : ''}`;
+            itemEl.dataset.item = item.name;
+            itemEl.dataset.category = categoryId;
+
+            // Checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'item-checkbox';
+            checkbox.checked = item.completed;
+            checkbox.addEventListener('change', function() {
+                toggleShoppingItemCompletion(itemEl, this.checked, item);
+            });
+            itemEl.appendChild(checkbox);
+
+            // Nombre del item
+            const nameEl = document.createElement('span');
+            nameEl.className = 'item-name';
+            nameEl.textContent = item.name;
+            itemEl.appendChild(nameEl);
+
+            // Mostrar cantidad
+            const quantityEl = document.createElement('div');
+            quantityEl.className = 'item-quantity-controls';
+            quantityEl.innerHTML = `
+                <span class="quantity-display">${item.quantity}</span>
+            `;
+            itemEl.appendChild(quantityEl);
+
+            // Estado del item
+            const statusEl = document.createElement('span');
+            statusEl.className = 'item-status';
+            statusEl.textContent = item.completed ? '✅' : '⏳';
+            itemEl.appendChild(statusEl);
+
+            return itemEl;
+        }
+
+        // Alternar completado en modo compra
+        function toggleShoppingItemCompletion(itemEl, completed, item) {
+            item.completed = completed;
+            
+            if (completed) {
+                itemEl.classList.add('completed');
+                itemEl.querySelector('.item-status').textContent = '✅';
+            } else {
+                itemEl.classList.remove('completed');
+                itemEl.querySelector('.item-status').textContent = '⏳';
+            }
+            
+            updateShoppingProgress();
+            
+            // Actualizar en la base de datos
+            updateListInDatabase();
+        }
+
+        // Finalizar compra
+        async function finishShopping() {
+            try {
+                await updateListInDatabase();
+                alert('Compra finalizada exitosamente');
+                
+                // Ocultar botón de compra
+                document.getElementById('shoppingBtn').style.display = 'none';
+                
+                // Volver a listas guardadas
+                switchSection('saved');
+                loadSavedLists();
                 
             } catch (error) {
                 console.error('Error finalizando compra:', error);
@@ -1415,168 +1741,197 @@
             }
         }
 
-        function exitShoppingMode() {
-            currentShoppingList = null;
+        // Iniciar modo edición
+        function startEditing(list) {
+            currentList = { ...list };
             
-            // Remover botón de modo compra
-            const shoppingBtn = document.querySelector('.shopping-mode-btn');
-            if (shoppingBtn) {
-                shoppingBtn.remove();
-            }
+            // Mostrar botón de edición en navegación
+            document.getElementById('editBtn').style.display = 'block';
             
-            // Volver a listas guardadas
-            showSection('saved-lists');
-            loadSavedLists();
+            // Cambiar a modo edición
+            switchSection('edit');
+            
+            // Cargar datos en formulario
+            document.getElementById('editListName').value = list.name;
+            
+            // Renderizar categorías para edición
+            renderEditCategories();
         }
 
-        async function editList(listId) {
-            try {
-                const { data: list, error } = await supabase
-                    .from('shopping_lists')
-                    .select('*')
-                    .eq('id', listId)
-                    .single();
-                
-                if (error) throw error;
-                
-                currentEditingList = list;
-                setupEditMode();
-                showEditSection();
-                
-            } catch (error) {
-                console.error('Error iniciando edición:', error);
-                alert('Error al iniciar modo edición');
-            }
-        }
-
-        function setupEditMode() {
-            document.getElementById('edit-list-name').textContent = `✏️ ${currentEditingList.name}`;
-            document.getElementById('edit-list-name-input').value = currentEditingList.name;
-            document.getElementById('edit-family-member').value = currentEditingList.created_by;
-            
-            generateEditCategories();
-        }
-
-        function generateEditCategories() {
-            const container = document.getElementById('edit-categories-container');
+        // Renderizar categorías para edición
+        function renderEditCategories() {
+            const container = document.getElementById('editCategories');
             container.innerHTML = '';
-            
-            Object.entries(products).forEach(([category, defaultItems]) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = `category ${category}`;
-                
-                // Obtener items existentes de esta categoría
-                const existingItems = currentEditingList.items.filter(item => item.category === category);
-                
-                // Combinar items por defecto con items existentes
-                const allItems = [...defaultItems];
-                existingItems.forEach(existingItem => {
-                    if (!allItems.includes(existingItem.name)) {
-                        allItems.push(existingItem.name);
-                    }
-                });
-                
-                categoryDiv.innerHTML = `
-                    <h3>${categoryNames[category]}</h3>
-                    <div class="category-items">
-                        ${allItems.map(itemName => {
-                            const existingItem = existingItems.find(item => item.name === itemName);
-                            const isSelected = !!existingItem;
-                            const quantity = existingItem ? existingItem.quantity : 1;
-                            
-                            return `
-                                <div class="item ${isSelected ? 'selected' : ''}" data-category="${category}" data-name="${itemName}">
-                                    <input type="checkbox" class="item-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleItem(this)">
-                                    <span class="item-name">${itemName}</span>
-                                    <div class="item-quantity-controls">
-                                        <button class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
-                                        <span class="quantity-display">${quantity}</span>
-                                        <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                                    </div>
-                                    <span class="item-status">${isSelected ? '✅' : '📋'}</span>
-                                    <button class="item-remove" onclick="removeItem(this)">×</button>
-                                </div>
-                            `;
-                        }).join('')}
-                        <div class="add-custom-item">
-                            <input type="text" placeholder="Agregar producto personalizado..." onkeypress="addCustomItemOnEnter(event, '${category}')">
-                            <button onclick="addCustomItem(this, '${category}')">+</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(categoryDiv);
+
+            // Crear todas las categorías
+            Object.entries(categories).forEach(([categoryId, category]) => {
+                const categoryEl = createEditCategoryElement(categoryId, category);
+                container.appendChild(categoryEl);
             });
         }
 
-        function showEditSection() {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
+        // Crear elemento de categoría para edición
+        function createEditCategoryElement(categoryId, category) {
+            const categoryEl = document.createElement('div');
+            categoryEl.className = `category ${categoryId}`;
+            
+            const title = document.createElement('h3');
+            title.innerHTML = `${category.icon} ${category.name}`;
+            categoryEl.appendChild(title);
+
+            // Agregar items predefinidos
+            category.items.forEach(itemName => {
+                const existingItem = currentList.items.find(item => 
+                    item.name === itemName && item.category === categoryId
+                );
+                
+                const itemEl = createEditItemElement(itemName, categoryId, existingItem);
+                categoryEl.appendChild(itemEl);
             });
-            
-            // Mostrar modo edición
-            document.getElementById('edit-mode').classList.add('active');
-            
-            // Actualizar botones de navegación
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.classList.remove('active', 'edit-mode');
+
+            // Agregar items personalizados de la lista
+            currentList.items.forEach(item => {
+                if (item.category === categoryId && 
+                    !category.items.includes(item.name)) {
+                    const itemEl = createEditItemElement(item.name, categoryId, item);
+                    categoryEl.appendChild(itemEl);
+                }
             });
+
+            // Control para agregar items personalizados
+            const customItemControl = createCustomItemControl(categoryId);
+            categoryEl.appendChild(customItemControl);
+
+            return categoryEl;
+        }
+
+        // Crear elemento de item para edición
+        function createEditItemElement(itemName, categoryId, existingItem) {
+            const quantity = existingItem ? existingItem.quantity : 1;
+            const isSelected = existingItem ? true : false;
             
-            // Crear botón temporal de modo edición si no existe
-            const navButtons = document.querySelector('.nav-buttons');
-            let editBtn = navButtons.querySelector('.edit-mode-btn');
-            if (!editBtn) {
-                editBtn = document.createElement('button');
-                editBtn.className = 'btn edit-mode edit-mode-btn active';
-                editBtn.innerHTML = '✏️ Modo Edición';
-                editBtn.onclick = () => showEditSection();
-                navButtons.appendChild(editBtn);
+            const itemEl = document.createElement('div');
+            itemEl.className = `item ${isSelected ? 'selected' : ''}`;
+            itemEl.dataset.item = itemName;
+            itemEl.dataset.category = categoryId;
+
+            // Nombre del item
+            const nameEl = document.createElement('span');
+            nameEl.className = 'item-name';
+            nameEl.textContent = itemName;
+            itemEl.appendChild(nameEl);
+
+            // Controles de cantidad
+            const quantityControls = document.createElement('div');
+            quantityControls.className = 'item-quantity-controls';
+
+            const decreaseBtn = document.createElement('button');
+            decreaseBtn.className = 'quantity-btn';
+            decreaseBtn.innerHTML = '−';
+            decreaseBtn.addEventListener('click', () => updateEditQuantity(itemEl, -1));
+
+            const quantityDisplay = document.createElement('span');
+            quantityDisplay.className = 'quantity-display';
+            quantityDisplay.textContent = quantity;
+
+            const increaseBtn = document.createElement('button');
+            increaseBtn.className = 'quantity-btn';
+            increaseBtn.innerHTML = '+';
+            increaseBtn.addEventListener('click', () => updateEditQuantity(itemEl, 1));
+
+            quantityControls.appendChild(decreaseBtn);
+            quantityControls.appendChild(quantityDisplay);
+            quantityControls.appendChild(increaseBtn);
+            itemEl.appendChild(quantityControls);
+
+            // Botón de eliminar
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'item-remove';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', () => removeEditItem(itemEl));
+            itemEl.appendChild(removeBtn);
+
+            // Click para seleccionar
+            itemEl.addEventListener('click', function(e) {
+                if (e.target.classList.contains('quantity-btn') || 
+                    e.target.classList.contains('item-remove')) {
+                    return;
+                }
+                toggleEditItemSelection(itemEl);
+            });
+
+            return itemEl;
+        }
+
+        // Alternar selección en modo edición
+        function toggleEditItemSelection(itemEl) {
+            const isSelected = itemEl.classList.contains('selected');
+            const quantityDisplay = itemEl.querySelector('.quantity-display');
+            
+            if (isSelected) {
+                itemEl.classList.remove('selected');
+                quantityDisplay.textContent = '1';
             } else {
-                editBtn.classList.add('active');
+                itemEl.classList.add('selected');
             }
         }
 
-        async function saveEditedList() {
-            const listName = document.getElementById('edit-list-name-input').value.trim();
-            const familyMember = document.getElementById('edit-family-member').value;
+        // Actualizar cantidad en modo edición
+        function updateEditQuantity(itemEl, change) {
+            const quantityDisplay = itemEl.querySelector('.quantity-display');
+            let quantity = parseInt(quantityDisplay.textContent) + change;
+            
+            if (quantity < 1) quantity = 1;
+            if (quantity > 99) quantity = 99;
+            
+            quantityDisplay.textContent = quantity;
+            
+            if (quantity > 1) {
+                itemEl.classList.add('selected');
+            }
+        }
+
+        // Eliminar item en modo edición
+        function removeEditItem(itemEl) {
+            itemEl.classList.remove('selected');
+            itemEl.querySelector('.quantity-display').textContent = '1';
+        }
+
+        // Finalizar edición
+        async function finishEditing() {
+            const listName = document.getElementById('editListName').value.trim();
             
             if (!listName) {
                 alert('Por favor ingresa un nombre para la lista');
                 return;
             }
-            
-            const selectedItems = [];
-            document.querySelectorAll('#edit-mode .item input[type="checkbox"]:checked').forEach(checkbox => {
-                const item = checkbox.closest('.item');
-                const itemData = {
-                    name: item.dataset.name,
-                    category: item.dataset.category,
-                    quantity: parseInt(item.querySelector('.quantity-display').textContent),
-                    completed: false
-                };
-                selectedItems.push(itemData);
-            });
+
+            const selectedItems = getEditSelectedItems();
             
             if (selectedItems.length === 0) {
-                alert('Por favor selecciona al menos un producto');
+                alert('Por favor selecciona al menos un item');
                 return;
             }
-            
+
             try {
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('shopping_lists')
                     .update({
                         name: listName,
-                        created_by: familyMember,
-                        items: selectedItems,
-                        updated_at: new Date().toISOString()
+                        items: selectedItems
                     })
-                    .eq('id', currentEditingList.id);
-                
+                    .eq('id', currentList.id);
+
                 if (error) throw error;
+
+                alert('Lista actualizada exitosamente');
                 
-                alert('¡Lista actualizada exitosamente!');
-                exitEditMode();
+                // Ocultar botón de edición
+                document.getElementById('editBtn').style.display = 'none';
+                
+                // Volver a listas guardadas
+                switchSection('saved');
+                loadSavedLists();
                 
             } catch (error) {
                 console.error('Error actualizando lista:', error);
@@ -1584,45 +1939,135 @@
             }
         }
 
-        function exitEditMode() {
-            currentEditingList = null;
+        // Obtener items seleccionados en modo edición
+        function getEditSelectedItems() {
+            const selectedItems = [];
+            const items = document.querySelectorAll('#editCategories .item.selected');
             
-            // Remover botón de modo edición
-            const editBtn = document.querySelector('.edit-mode-btn');
-            if (editBtn) {
-                editBtn.remove();
-            }
+            items.forEach(item => {
+                const name = item.querySelector('.item-name').textContent;
+                const quantity = parseInt(item.querySelector('.quantity-display').textContent);
+                const category = item.dataset.category;
+                
+                // Mantener estado de completado si existía
+                const existingItem = currentList.items.find(existing => 
+                    existing.name === name && existing.category === category
+                );
+                
+                selectedItems.push({
+                    name,
+                    quantity,
+                    category,
+                    completed: existingItem ? existingItem.completed : false
+                });
+            });
             
-            // Volver a listas guardadas
-            showSection('saved-lists');
-            loadSavedLists();
+            return selectedItems;
         }
 
-        // Funciones de utilidad para touch
-        document.addEventListener('touchstart', function(e) {
-            if (e.target.classList.contains('touchable')) {
-                e.target.style.transform = 'scale(0.95)';
+        // Eliminar lista
+        async function deleteList(listId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
+                return;
             }
-        });
 
-        document.addEventListener('touchend', function(e) {
-            if (e.target.classList.contains('touchable')) {
-                setTimeout(() => {
-                    e.target.style.transform = '';
-                }, 150);
+            try {
+                const { error } = await supabase
+                    .from('shopping_lists')
+                    .delete()
+                    .eq('id', listId);
+
+                if (error) throw error;
+
+                alert('Lista eliminada exitosamente');
+                loadSavedLists();
+                
+            } catch (error) {
+                console.error('Error eliminando lista:', error);
+                alert('Error al eliminar la lista');
             }
-        });
+        }
 
-        // Prevenir zoom en doble tap
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
+        // Actualizar lista en base de datos
+        async function updateListInDatabase() {
+            if (!currentList) return;
+
+            try {
+                const { error } = await supabase
+                    .from('shopping_lists')
+                    .update({
+                        items: currentList.items
+                    })
+                    .eq('id', currentList.id);
+
+                if (error) throw error;
+                
+            } catch (error) {
+                console.error('Error actualizando lista:', error);
+                throw error;
             }
-            lastTouchEnd = now;
-        }, false);
+        }
 
-        let lastTouchEnd = 0;
+        // Funciones de utilidad adicionales
+        function resetEditForm() {
+            document.getElementById('editListName').value = '';
+            document.querySelectorAll('#editCategories .item').forEach(item => {
+                item.classList.remove('selected');
+                item.querySelector('.quantity-display').textContent = '1';
+            });
+        }
+
+        // Mejorar la función de agregar items personalizados
+        function addCustomItem(categoryId, input) {
+            const itemName = input.value.trim();
+            if (!itemName) return;
+
+            let targetCategory;
+            if (currentMode === 'edit') {
+                targetCategory = document.querySelector(`#editCategories .category.${categoryId}`);
+            } else {
+                targetCategory = document.querySelector(`#categories .category.${categoryId}`);
+            }
+            
+            if (!targetCategory) return;
+
+            // Verificar si el item ya existe
+            const existingItem = targetCategory.querySelector(`[data-item="${itemName}"]`);
+            if (existingItem) {
+                alert('Este item ya existe en la categoría');
+                return;
+            }
+
+            let itemEl;
+            if (currentMode === 'edit') {
+                itemEl = createEditItemElement(itemName, categoryId, null);
+            } else {
+                itemEl = createItemElement(itemName, categoryId);
+            }
+            
+            targetCategory.insertBefore(itemEl, targetCategory.lastElementChild);
+            input.value = '';
+            
+            if (currentMode === 'edit') {
+                toggleEditItemSelection(itemEl);
+            } else {
+                toggleItemSelection(itemEl);
+            }
+        }
+
+        // Mejorar la actualización del progreso de compra
+        function updateShoppingProgress() {
+            const items = document.querySelectorAll('#shoppingCategories .item');
+            const completedItems = document.querySelectorAll('#shoppingCategories .item.completed');
+            
+            const total = items.length;
+            const completed = completedItems.length;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            
+            document.getElementById('shoppingProgress').style.width = progress + '%';
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = total;
+        }
     </script>
 </body>
 </html>
