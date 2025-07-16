@@ -943,6 +943,316 @@
                 font-size: 0.8rem;
             }
         }
+        /* Estilos para el sistema de carpetas */
+.folder-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.folder-btn {
+    background: #ffffff;
+    color: #64748b;
+    border: 1px solid #e5e7eb;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    touch-action: manipulation;
+}
+
+.folder-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.folder-btn.active {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border-color: #6366f1;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.folder-btn.new-folder {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-color: #10b981;
+}
+
+.folder-btn.new-folder:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+}
+
+/* Estilos para modales */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+.folder-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.folder-option {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-align: left;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.folder-option:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.folder-option:active {
+    transform: scale(0.98);
+}
+
+.create-folder-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+    display: flex;
+    gap: 8px;
+}
+
+.create-folder-section input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.create-folder-section button {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.create-folder-section button:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.modal-actions button:first-child {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.modal-actions button:first-child:hover {
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+}
+
+.modal-actions button:last-child {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-actions button:last-child:hover {
+    background: #e5e7eb;
+}
+
+/* Actualizar estilos de botones de lista */
+.list-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.list-actions button {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    touch-action: manipulation;
+    transition: all 0.3s ease;
+}
+
+.delete-list-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.shop-list-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    color: white;
+}
+
+.edit-list-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.folder-btn.list-action {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.list-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.list-actions button:active {
+    transform: scale(0.95);
+}
+
+/* Responsive para carpetas */
+@media screen and (max-width: 480px) {
+    .folder-selector {
+        padding: 12px;
+        gap: 6px;
+    }
+    
+    .folder-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-content {
+        padding: 16px;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .list-actions {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .list-actions button {
+        padding: 6px 8px;
+        font-size: 0.7rem;
+    }
+    
+    .create-folder-section {
+        flex-direction: column;
+    }
+    
+    .create-folder-section button {
+        width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -1061,6 +1371,7 @@
                     <button class="exit-editing-btn" id="exitEditing">
                         🔙 Volver a Listas
                     </button>
+                     <p>made in jota</p>
                 </div>
             </div>
         </div>
@@ -1167,7 +1478,7 @@
             
             if (connected) {
                 indicator.className = 'status-indicator';
-                status.textContent = 'Conectado';
+                status.textContent = 'Conectado a familia market!';
             } else {
                 indicator.className = 'status-indicator disconnected';
                 status.textContent = 'Sin conexión';
@@ -1545,529 +1856,516 @@
         }
 
 // Crear elemento de lista guardada
-        function createSavedListElement(list) {
-            const listEl = document.createElement('div');
-            listEl.className = 'saved-list';
-            listEl.dataset.listId = list.id;
-
-            const title = document.createElement('h3');
-            title.textContent = list.name;
-            listEl.appendChild(title);
-
-            const meta = document.createElement('div');
-            meta.className = 'saved-list-meta';
-            const createdDate = new Date(list.created_at).toLocaleDateString();
-            const completedItems = list.items.filter(item => item.completed).length;
-            const totalItems = list.items.length;
-            meta.innerHTML = `Creada el ${createdDate} • ${completedItems}/${totalItems} completados`;
-            listEl.appendChild(meta);
-
-            // Progreso
-            const progressBar = document.createElement('div');
-            progressBar.className = 'progress-bar';
-            const progressFill = document.createElement('div');
-            progressFill.className = 'progress-fill';
-            progressFill.style.width = totalItems > 0 ? (completedItems / totalItems) * 100 + '%' : '0%';
-            progressBar.appendChild(progressFill);
-            listEl.appendChild(progressBar);
-
-            // Items de la lista
-            const itemsContainer = document.createElement('div');
-            itemsContainer.className = 'saved-list-items';
-            list.items.forEach(item => {
-                const itemEl = document.createElement('div');
-                itemEl.className = `saved-item ${item.completed ? 'completed' : ''}`;
-                itemEl.innerHTML = `
+function createSavedListElement(list) {
+    const listEl = document.createElement('div');
+    listEl.className = 'saved-list';
+    listEl.dataset.listId = list.id;
+    
+    const totalItems = list.items.length;
+    const completedItems = list.items.filter(item => item.completed).length;
+    const progressPercent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+    
+    listEl.innerHTML = `
+        <h3>${list.name}</h3>
+        <div class="saved-list-meta">
+            Creada el ${new Date(list.created_at).toLocaleDateString()} • ${totalItems} items
+            ${list.folder_id ? `• Carpeta: ${list.folder_name || 'Sin nombre'}` : ''}
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+        <div class="saved-list-items">
+            ${list.items.map(item => `
+                <div class="saved-item ${item.completed ? 'completed' : ''}">
                     <span>${item.name}</span>
                     <span class="saved-item-quantity">${item.quantity}</span>
-                `;
-                itemsContainer.appendChild(itemEl);
-            });
-            listEl.appendChild(itemsContainer);
+                </div>
+            `).join('')}
+        </div>
+        <div class="list-actions">
+            <button class="shop-list-btn" onclick="startShopping('${list.id}')">🛍️ Comprar</button>
+            <button class="edit-list-btn" onclick="editList('${list.id}')">✏️ Editar</button>
+            <button class="folder-btn" onclick="showFolderModal('${list.id}')">📁 Carpeta</button>
+            <button class="delete-list-btn" onclick="deleteList('${list.id}')">🗑️ Eliminar</button>
+        </div>
+    `;
+    
+    return listEl;
+}
 
-            // Botones de acción
-            const actions = document.createElement('div');
-            actions.className = 'list-actions';
+// Sistema de Carpetas
+let folders = [];
+let currentFolderId = null;
 
-            const shopBtn = document.createElement('button');
-            shopBtn.className = 'shop-list-btn';
-            shopBtn.innerHTML = '🛍️ Comprar';
-            shopBtn.addEventListener('click', () => startShopping(list));
+// Cargar carpetas desde la base de datos
+async function loadFolders() {
+    try {
+        const { data, error } = await supabase
+            .from('folders')
+            .select('*')
+            .order('name');
 
-            const editBtn = document.createElement('button');
-            editBtn.className = 'edit-list-btn';
-            editBtn.innerHTML = '✏️ Editar';
-            editBtn.addEventListener('click', () => startEditing(list));
+        if (error) throw error;
+        folders = data || [];
+        renderFolderSelector();
+    } catch (error) {
+        console.error('Error cargando carpetas:', error);
+    }
+}
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-list-btn';
-            deleteBtn.innerHTML = '🗑️ Eliminar';
-            deleteBtn.addEventListener('click', () => deleteList(list.id));
+// Renderizar selector de carpetas
+function renderFolderSelector() {
+    const container = document.getElementById('folderSelector');
+    if (!container) return;
 
-            actions.appendChild(shopBtn);
-            actions.appendChild(editBtn);
-            actions.appendChild(deleteBtn);
-            listEl.appendChild(actions);
+    container.innerHTML = `
+        <div class="folder-selector">
+            <button class="folder-btn ${currentFolderId === null ? 'active' : ''}" onclick="filterByFolder(null)">
+                📋 Todas las listas
+            </button>
+            ${folders.map(folder => `
+                <button class="folder-btn ${currentFolderId === folder.id ? 'active' : ''}" 
+                        onclick="filterByFolder('${folder.id}')">
+                    📁 ${folder.name}
+                </button>
+            `).join('')}
+            <button class="folder-btn new-folder" onclick="showCreateFolderModal()">
+                ➕ Nueva Carpeta
+            </button>
+        </div>
+    `;
+}
 
-            return listEl;
+// Filtrar listas por carpeta
+function filterByFolder(folderId) {
+    currentFolderId = folderId;
+    loadSavedLists();
+    renderFolderSelector();
+}
+
+// Mostrar modal de carpetas
+function showFolderModal(listId) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Mover a Carpeta</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="folder-options">
+                    <button class="folder-option" onclick="moveToFolder('${listId}', null)">
+                        📋 Sin carpeta
+                    </button>
+                    ${folders.map(folder => `
+                        <button class="folder-option" onclick="moveToFolder('${listId}', '${folder.id}')">
+                            📁 ${folder.name}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="create-folder-section">
+                    <input type="text" id="newFolderName" placeholder="Nombre de nueva carpeta...">
+                    <button onclick="createAndMoveToFolder('${listId}')">Crear y Mover</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Mostrar modal para crear carpeta
+function showCreateFolderModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Nueva Carpeta</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <input type="text" id="folderNameInput" placeholder="Nombre de la carpeta...">
+                <div class="modal-actions">
+                    <button onclick="createFolder()">Crear Carpeta</button>
+                    <button onclick="closeModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.getElementById('folderNameInput').focus();
+}
+
+// Crear carpeta
+async function createFolder() {
+    const name = document.getElementById('folderNameInput').value.trim();
+    if (!name) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('folders')
+            .insert([{ name }]);
+
+        if (error) throw error;
+
+        closeModal();
+        loadFolders();
+        alert('Carpeta creada exitosamente');
+    } catch (error) {
+        console.error('Error creando carpeta:', error);
+        alert('Error al crear la carpeta');
+    }
+}
+
+// Mover lista a carpeta
+async function moveToFolder(listId, folderId) {
+    try {
+        const { error } = await supabase
+            .from('shopping_lists')
+            .update({ folder_id: folderId })
+            .eq('id', listId);
+
+        if (error) throw error;
+
+        closeModal();
+        loadSavedLists();
+        alert('Lista movida exitosamente');
+    } catch (error) {
+        console.error('Error moviendo lista:', error);
+        alert('Error al mover la lista');
+    }
+}
+
+// Crear carpeta y mover lista
+async function createAndMoveToFolder(listId) {
+    const name = document.getElementById('newFolderName').value.trim();
+    if (!name) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('folders')
+            .insert([{ name }])
+            .select();
+
+        if (error) throw error;
+
+        const folderId = data[0].id;
+        await moveToFolder(listId, folderId);
+        loadFolders();
+    } catch (error) {
+        console.error('Error creando carpeta:', error);
+        alert('Error al crear la carpeta');
+    }
+}
+
+// Cerrar modal
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Iniciar compra
+async function startShopping(listId) {
+    try {
+        const { data, error } = await supabase
+            .from('shopping_lists')
+            .select('*')
+            .eq('id', listId)
+            .single();
+
+        if (error) throw error;
+
+        currentList = data;
+        renderShoppingMode();
+        switchSection('shopping');
+        
+        // Mostrar botón de compra en navegación
+        document.getElementById('shoppingBtn').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error iniciando compra:', error);
+        alert('Error al cargar la lista');
+    }
+}
+
+// Renderizar modo compra
+function renderShoppingMode() {
+    const container = document.getElementById('shoppingCategories');
+    container.innerHTML = '';
+
+    // Agrupar items por categoría
+    const itemsByCategory = {};
+    currentList.items.forEach(item => {
+        if (!itemsByCategory[item.category]) {
+            itemsByCategory[item.category] = [];
         }
+        itemsByCategory[item.category].push(item);
+    });
 
-        // Iniciar modo compra
-        function startShopping(list) {
-            currentList = { ...list };
-            
-            // Mostrar botón de compra en navegación
-            document.getElementById('shoppingBtn').style.display = 'block';
-            
-            // Cambiar a modo compra
-            switchSection('shopping');
-            
-            // Renderizar categorías para compra
-            renderShoppingCategories();
-            
-            // Actualizar progreso
-            updateShoppingProgress();
-        }
+    // Crear categorías
+    Object.entries(itemsByCategory).forEach(([categoryId, items]) => {
+        const category = categories[categoryId];
+        if (!category) return;
 
-        // Renderizar categorías para compra
-        function renderShoppingCategories() {
-            const container = document.getElementById('shoppingCategories');
-            container.innerHTML = '';
+        const categoryEl = document.createElement('div');
+        categoryEl.className = `category ${categoryId}`;
+        
+        const title = document.createElement('h3');
+        title.innerHTML = `${category.icon} ${category.name}`;
+        categoryEl.appendChild(title);
 
-            // Agrupar items por categoría
-            const itemsByCategory = {};
-            currentList.items.forEach(item => {
-                if (!itemsByCategory[item.category]) {
-                    itemsByCategory[item.category] = [];
-                }
-                itemsByCategory[item.category].push(item);
-            });
+        items.forEach(item => {
+            const itemEl = createItemElement(item.name, categoryId, item.quantity, item.completed);
+            categoryEl.appendChild(itemEl);
+        });
 
-            // Crear categorías
-            Object.entries(itemsByCategory).forEach(([categoryId, items]) => {
-                const category = categories[categoryId];
-                if (!category) return;
+        container.appendChild(categoryEl);
+    });
 
-                const categoryEl = document.createElement('div');
-                categoryEl.className = `category ${categoryId}`;
-                
-                const title = document.createElement('h3');
-                title.innerHTML = `${category.icon} ${category.name}`;
-                categoryEl.appendChild(title);
+    updateShoppingProgress();
+}
 
-                items.forEach(item => {
-                    const itemEl = createShoppingItemElement(item, categoryId);
-                    categoryEl.appendChild(itemEl);
-                });
+// Editar lista
+async function editList(listId) {
+    try {
+        const { data, error } = await supabase
+            .from('shopping_lists')
+            .select('*')
+            .eq('id', listId)
+            .single();
 
-                container.appendChild(categoryEl);
-            });
-        }
+        if (error) throw error;
 
-        // Crear elemento de item para compra
-        function createShoppingItemElement(item, categoryId) {
-            const itemEl = document.createElement('div');
-            itemEl.className = `item ${item.completed ? 'completed' : ''}`;
-            itemEl.dataset.item = item.name;
-            itemEl.dataset.category = categoryId;
+        currentList = data;
+        renderEditMode();
+        switchSection('edit');
+        
+        // Mostrar botón de edición en navegación
+        document.getElementById('editBtn').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error cargando lista para editar:', error);
+        alert('Error al cargar la lista');
+    }
+}
 
-            // Checkbox
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'item-checkbox';
-            checkbox.checked = item.completed;
-            checkbox.addEventListener('change', function() {
-                toggleShoppingItemCompletion(itemEl, this.checked, item);
-            });
-            itemEl.appendChild(checkbox);
+// Renderizar modo edición
+function renderEditMode() {
+    document.getElementById('editListName').value = currentList.name;
+    
+    const container = document.getElementById('editCategories');
+    container.innerHTML = '';
 
-            // Nombre del item
-            const nameEl = document.createElement('span');
-            nameEl.className = 'item-name';
-            nameEl.textContent = item.name;
-            itemEl.appendChild(nameEl);
+    // Renderizar todas las categorías
+    Object.entries(categories).forEach(([categoryId, category]) => {
+        const categoryEl = document.createElement('div');
+        categoryEl.className = `category ${categoryId}`;
+        
+        const title = document.createElement('h3');
+        title.innerHTML = `${category.icon} ${category.name}`;
+        categoryEl.appendChild(title);
 
-            // Mostrar cantidad
-            const quantityEl = document.createElement('div');
-            quantityEl.className = 'item-quantity-controls';
-            quantityEl.innerHTML = `
-                <span class="quantity-display">${item.quantity}</span>
-            `;
-            itemEl.appendChild(quantityEl);
+        // Agregar items existentes de la lista
+        const existingItems = currentList.items.filter(item => item.category === categoryId);
+        existingItems.forEach(item => {
+            const itemEl = createItemElement(item.name, categoryId, item.quantity, item.completed);
+            itemEl.classList.add('selected');
+            categoryEl.appendChild(itemEl);
+        });
 
-            // Estado del item
-            const statusEl = document.createElement('span');
-            statusEl.className = 'item-status';
-            statusEl.textContent = item.completed ? '✅' : '⏳';
-            itemEl.appendChild(statusEl);
-
-            return itemEl;
-        }
-
-        // Alternar completado en modo compra
-        function toggleShoppingItemCompletion(itemEl, completed, item) {
-            item.completed = completed;
-            
-            if (completed) {
-                itemEl.classList.add('completed');
-                itemEl.querySelector('.item-status').textContent = '✅';
-            } else {
-                itemEl.classList.remove('completed');
-                itemEl.querySelector('.item-status').textContent = '⏳';
-            }
-            
-            updateShoppingProgress();
-            
-            // Actualizar en la base de datos
-            updateListInDatabase();
-        }
-
-        // Finalizar compra
-        async function finishShopping() {
-            try {
-                await updateListInDatabase();
-                alert('Compra finalizada exitosamente');
-                
-                // Ocultar botón de compra
-                document.getElementById('shoppingBtn').style.display = 'none';
-                
-                // Volver a listas guardadas
-                switchSection('saved');
-                loadSavedLists();
-                
-            } catch (error) {
-                console.error('Error finalizando compra:', error);
-                alert('Error al finalizar compra');
-            }
-        }
-
-        // Iniciar modo edición
-        function startEditing(list) {
-            currentList = { ...list };
-            
-            // Mostrar botón de edición en navegación
-            document.getElementById('editBtn').style.display = 'block';
-            
-            // Cambiar a modo edición
-            switchSection('edit');
-            
-            // Cargar datos en formulario
-            document.getElementById('editListName').value = list.name;
-            
-            // Renderizar categorías para edición
-            renderEditCategories();
-        }
-
-        // Renderizar categorías para edición
-        function renderEditCategories() {
-            const container = document.getElementById('editCategories');
-            container.innerHTML = '';
-
-            // Crear todas las categorías
-            Object.entries(categories).forEach(([categoryId, category]) => {
-                const categoryEl = createEditCategoryElement(categoryId, category);
-                container.appendChild(categoryEl);
-            });
-        }
-
-        // Crear elemento de categoría para edición
-        function createEditCategoryElement(categoryId, category) {
-            const categoryEl = document.createElement('div');
-            categoryEl.className = `category ${categoryId}`;
-            
-            const title = document.createElement('h3');
-            title.innerHTML = `${category.icon} ${category.name}`;
-            categoryEl.appendChild(title);
-
-            // Agregar items predefinidos
-            category.items.forEach(itemName => {
-                const existingItem = currentList.items.find(item => 
-                    item.name === itemName && item.category === categoryId
-                );
-                
-                const itemEl = createEditItemElement(itemName, categoryId, existingItem);
+        // Agregar items predefinidos no seleccionados
+        category.items.forEach(itemName => {
+            const exists = existingItems.some(item => item.name === itemName);
+            if (!exists) {
+                const itemEl = createItemElement(itemName, categoryId);
                 categoryEl.appendChild(itemEl);
-            });
+            }
+        });
 
-            // Agregar items personalizados de la lista
-            currentList.items.forEach(item => {
-                if (item.category === categoryId && 
-                    !category.items.includes(item.name)) {
-                    const itemEl = createEditItemElement(item.name, categoryId, item);
-                    categoryEl.appendChild(itemEl);
-                }
-            });
+        // Agregar control para items personalizados
+        const customItemControl = createCustomItemControl(categoryId);
+        categoryEl.appendChild(customItemControl);
 
-            // Control para agregar items personalizados
-            const customItemControl = createCustomItemControl(categoryId);
-            categoryEl.appendChild(customItemControl);
+        container.appendChild(categoryEl);
+    });
+}
 
-            return categoryEl;
+// Finalizar compra
+async function finishShopping() {
+    if (!currentList) return;
+
+    try {
+        // Actualizar estado de los items
+        const items = [];
+        document.querySelectorAll('#shoppingCategories .item').forEach(itemEl => {
+            const name = itemEl.querySelector('.item-name').textContent;
+            const quantity = parseInt(itemEl.querySelector('.quantity-display').textContent);
+            const category = itemEl.dataset.category;
+            const completed = itemEl.classList.contains('completed');
+            
+            items.push({ name, quantity, category, completed });
+        });
+
+        const { error } = await supabase
+            .from('shopping_lists')
+            .update({ 
+                items: items,
+                last_shopped: new Date().toISOString()
+            })
+            .eq('id', currentList.id);
+
+        if (error) throw error;
+
+        alert('Compra finalizada y guardada');
+        currentList = null;
+        document.getElementById('shoppingBtn').style.display = 'none';
+        switchSection('saved');
+        
+    } catch (error) {
+        console.error('Error finalizando compra:', error);
+        alert('Error al guardar el progreso');
+    }
+}
+
+// Finalizar edición
+async function finishEditing() {
+    if (!currentList) return;
+
+    const newName = document.getElementById('editListName').value.trim();
+    if (!newName) {
+        alert('Por favor ingresa un nombre para la lista');
+        return;
+    }
+
+    try {
+        const selectedItems = [];
+        document.querySelectorAll('#editCategories .item.selected').forEach(itemEl => {
+            const name = itemEl.querySelector('.item-name').textContent;
+            const quantity = parseInt(itemEl.querySelector('.quantity-display').textContent);
+            const category = itemEl.dataset.category;
+            
+            selectedItems.push({ name, quantity, category, completed: false });
+        });
+
+        const { error } = await supabase
+            .from('shopping_lists')
+            .update({ 
+                name: newName,
+                items: selectedItems,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', currentList.id);
+
+        if (error) throw error;
+
+        alert('Lista actualizada exitosamente');
+        currentList = null;
+        document.getElementById('editBtn').style.display = 'none';
+        switchSection('saved');
+        loadSavedLists();
+        
+    } catch (error) {
+        console.error('Error actualizando lista:', error);
+        alert('Error al actualizar la lista');
+    }
+}
+
+// Eliminar lista
+async function deleteList(listId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('shopping_lists')
+            .delete()
+            .eq('id', listId);
+
+        if (error) throw error;
+
+        alert('Lista eliminada exitosamente');
+        loadSavedLists();
+        
+    } catch (error) {
+        console.error('Error eliminando lista:', error);
+        alert('Error al eliminar la lista');
+    }
+}
+
+// Modificar la función loadSavedLists para incluir carpetas
+async function loadSavedLists() {
+    const container = document.getElementById('savedLists');
+    
+    try {
+        let query = supabase
+            .from('shopping_lists')
+            .select(`
+                *,
+                folders(name)
+            `)
+            .order('created_at', { ascending: false });
+
+        // Filtrar por carpeta si hay una seleccionada
+        if (currentFolderId) {
+            query = query.eq('folder_id', currentFolderId);
+        } else if (currentFolderId === null) {
+            // Mostrar todas las listas si no hay filtro
         }
 
-        // Crear elemento de item para edición
-        function createEditItemElement(itemName, categoryId, existingItem) {
-            const quantity = existingItem ? existingItem.quantity : 1;
-            const isSelected = existingItem ? true : false;
-            
-            const itemEl = document.createElement('div');
-            itemEl.className = `item ${isSelected ? 'selected' : ''}`;
-            itemEl.dataset.item = itemName;
-            itemEl.dataset.category = categoryId;
+        const { data, error } = await query;
 
-            // Nombre del item
-            const nameEl = document.createElement('span');
-            nameEl.className = 'item-name';
-            nameEl.textContent = itemName;
-            itemEl.appendChild(nameEl);
+        if (error) throw error;
 
-            // Controles de cantidad
-            const quantityControls = document.createElement('div');
-            quantityControls.className = 'item-quantity-controls';
+        // Agregar selector de carpetas
+        const folderSelector = document.createElement('div');
+        folderSelector.id = 'folderSelector';
+        container.innerHTML = '';
+        container.appendChild(folderSelector);
+        
+        await loadFolders();
 
-            const decreaseBtn = document.createElement('button');
-            decreaseBtn.className = 'quantity-btn';
-            decreaseBtn.innerHTML = '−';
-            decreaseBtn.addEventListener('click', () => updateEditQuantity(itemEl, -1));
-
-            const quantityDisplay = document.createElement('span');
-            quantityDisplay.className = 'quantity-display';
-            quantityDisplay.textContent = quantity;
-
-            const increaseBtn = document.createElement('button');
-            increaseBtn.className = 'quantity-btn';
-            increaseBtn.innerHTML = '+';
-            increaseBtn.addEventListener('click', () => updateEditQuantity(itemEl, 1));
-
-            quantityControls.appendChild(decreaseBtn);
-            quantityControls.appendChild(quantityDisplay);
-            quantityControls.appendChild(increaseBtn);
-            itemEl.appendChild(quantityControls);
-
-            // Botón de eliminar
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'item-remove';
-            removeBtn.innerHTML = '×';
-            removeBtn.addEventListener('click', () => removeEditItem(itemEl));
-            itemEl.appendChild(removeBtn);
-
-            // Click para seleccionar
-            itemEl.addEventListener('click', function(e) {
-                if (e.target.classList.contains('quantity-btn') || 
-                    e.target.classList.contains('item-remove')) {
-                    return;
-                }
-                toggleEditItemSelection(itemEl);
-            });
-
-            return itemEl;
+        if (data.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <h3>No hay listas ${currentFolderId ? 'en esta carpeta' : 'guardadas'}</h3>
+                <p>${currentFolderId ? 'Mueve algunas listas a esta carpeta' : 'Crea tu primera lista para comenzar'}</p>
+            `;
+            container.appendChild(emptyState);
+            return;
         }
 
-        // Alternar selección en modo edición
-        function toggleEditItemSelection(itemEl) {
-            const isSelected = itemEl.classList.contains('selected');
-            const quantityDisplay = itemEl.querySelector('.quantity-display');
-            
-            if (isSelected) {
-                itemEl.classList.remove('selected');
-                quantityDisplay.textContent = '1';
-            } else {
-                itemEl.classList.add('selected');
-            }
-        }
+        data.forEach(list => {
+            // Agregar nombre de carpeta si existe
+            list.folder_name = list.folders ? list.folders.name : null;
+            const listEl = createSavedListElement(list);
+            container.appendChild(listEl);
+        });
+        
+    } catch (error) {
+        console.error('Error cargando listas:', error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>Error al cargar listas</h3>
+                <p>Revisa tu conexión a internet</p>
+            </div>
+        `;
+    }
+}
 
-        // Actualizar cantidad en modo edición
-        function updateEditQuantity(itemEl, change) {
-            const quantityDisplay = itemEl.querySelector('.quantity-display');
-            let quantity = parseInt(quantityDisplay.textContent) + change;
-            
-            if (quantity < 1) quantity = 1;
-            if (quantity > 99) quantity = 99;
-            
-            quantityDisplay.textContent = quantity;
-            
-            if (quantity > 1) {
-                itemEl.classList.add('selected');
-            }
-        }
-
-        // Eliminar item en modo edición
-        function removeEditItem(itemEl) {
-            itemEl.classList.remove('selected');
-            itemEl.querySelector('.quantity-display').textContent = '1';
-        }
-
-        // Finalizar edición
-        async function finishEditing() {
-            const listName = document.getElementById('editListName').value.trim();
-            
-            if (!listName) {
-                alert('Por favor ingresa un nombre para la lista');
-                return;
-            }
-
-            const selectedItems = getEditSelectedItems();
-            
-            if (selectedItems.length === 0) {
-                alert('Por favor selecciona al menos un item');
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase
-                    .from('shopping_lists')
-                    .update({
-                        name: listName,
-                        items: selectedItems
-                    })
-                    .eq('id', currentList.id);
-
-                if (error) throw error;
-
-                alert('Lista actualizada exitosamente');
-                
-                // Ocultar botón de edición
-                document.getElementById('editBtn').style.display = 'none';
-                
-                // Volver a listas guardadas
-                switchSection('saved');
-                loadSavedLists();
-                
-            } catch (error) {
-                console.error('Error actualizando lista:', error);
-                alert('Error al actualizar la lista');
-            }
-        }
-
-        // Obtener items seleccionados en modo edición
-        function getEditSelectedItems() {
-            const selectedItems = [];
-            const items = document.querySelectorAll('#editCategories .item.selected');
-            
-            items.forEach(item => {
-                const name = item.querySelector('.item-name').textContent;
-                const quantity = parseInt(item.querySelector('.quantity-display').textContent);
-                const category = item.dataset.category;
-                
-                // Mantener estado de completado si existía
-                const existingItem = currentList.items.find(existing => 
-                    existing.name === name && existing.category === category
-                );
-                
-                selectedItems.push({
-                    name,
-                    quantity,
-                    category,
-                    completed: existingItem ? existingItem.completed : false
-                });
-            });
-            
-            return selectedItems;
-        }
-
-        // Eliminar lista
-        async function deleteList(listId) {
-            if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('shopping_lists')
-                    .delete()
-                    .eq('id', listId);
-
-                if (error) throw error;
-
-                alert('Lista eliminada exitosamente');
-                loadSavedLists();
-                
-            } catch (error) {
-                console.error('Error eliminando lista:', error);
-                alert('Error al eliminar la lista');
-            }
-        }
-
-        // Actualizar lista en base de datos
-        async function updateListInDatabase() {
-            if (!currentList) return;
-
-            try {
-                const { error } = await supabase
-                    .from('shopping_lists')
-                    .update({
-                        items: currentList.items
-                    })
-                    .eq('id', currentList.id);
-
-                if (error) throw error;
-                
-            } catch (error) {
-                console.error('Error actualizando lista:', error);
-                throw error;
-            }
-        }
-
-        // Funciones de utilidad adicionales
-        function resetEditForm() {
-            document.getElementById('editListName').value = '';
-            document.querySelectorAll('#editCategories .item').forEach(item => {
-                item.classList.remove('selected');
-                item.querySelector('.quantity-display').textContent = '1';
-            });
-        }
-
-        // Mejorar la función de agregar items personalizados
-        function addCustomItem(categoryId, input) {
-            const itemName = input.value.trim();
-            if (!itemName) return;
-
-            let targetCategory;
-            if (currentMode === 'edit') {
-                targetCategory = document.querySelector(`#editCategories .category.${categoryId}`);
-            } else {
-                targetCategory = document.querySelector(`#categories .category.${categoryId}`);
-            }
-            
-            if (!targetCategory) return;
-
-            // Verificar si el item ya existe
-            const existingItem = targetCategory.querySelector(`[data-item="${itemName}"]`);
-            if (existingItem) {
-                alert('Este item ya existe en la categoría');
-                return;
-            }
-
-            let itemEl;
-            if (currentMode === 'edit') {
-                itemEl = createEditItemElement(itemName, categoryId, null);
-            } else {
-                itemEl = createItemElement(itemName, categoryId);
-            }
-            
-            targetCategory.insertBefore(itemEl, targetCategory.lastElementChild);
-            input.value = '';
-            
-            if (currentMode === 'edit') {
-                toggleEditItemSelection(itemEl);
-            } else {
-                toggleItemSelection(itemEl);
-            }
-        }
-
-        // Mejorar la actualización del progreso de compra
-        function updateShoppingProgress() {
-            const items = document.querySelectorAll('#shoppingCategories .item');
-            const completedItems = document.querySelectorAll('#shoppingCategories .item.completed');
-            
-            const total = items.length;
-            const completed = completedItems.length;
-            const progress = total > 0 ? (completed / total) * 100 : 0;
-            
-            document.getElementById('shoppingProgress').style.width = progress + '%';
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('totalCount').textContent = total;
-        }
+// Inicializar carpetas al cargar la aplicación
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+    setupEventListeners();
+    renderCategories();
+    loadFolders();
+});
     </script>
 </body>
 </html>
