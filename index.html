@@ -1263,7 +1263,7 @@
                 <p>Familia con Orejas</p>
                 <div class="connection-status">
                     <div class="status-indicator" id="statusIndicator"></div>
-                    <span id="connectionStatus">Conectando...</span>
+                    <span id="connectionStatus">Conectando a family...</span>
                 </div>
             </div>
         </div>
@@ -1391,60 +1391,64 @@
 
         // Categorías predefinidas con items
         const categories = {
-            dairy: {
-                name: 'Lácteos',
-                icon: '🥛',
-                items: ['Leche', 'Yogur', 'Queso', 'Mantequilla', 'Crema', 'Queso crema']
-            },
-            meat: {
-                name: 'Carnes',
-                icon: '🥩',
-                items: ['Pollo', 'Carne molida', 'Bistec', 'Pescado', 'Jamón', 'Salchichas']
-            },
             vegetables: {
                 name: 'Verduras',
                 icon: '🥬',
-                items: ['Lechuga', 'Tomate', 'Cebolla', 'Zanahoria', 'Pepino', 'Pimentón']
+                items: ['Tomate', 'Cebolla', 'Ajo', 'Zanahoria', 'Lechuga', 'Pepino', 'Palta','Betarraga','coliflor','Brocoli','Zapallo amarillo','Zapallo italiano','Repollo','Morron','Cebollín','Cilantro','champiñon','Acelga','Ají verde','Limones','Choclo','Apío','Cochayuyo','Papa','Alcachofa','Jengibre','Espinaca']
             },
             fruits: {
                 name: 'Frutas',
                 icon: '🍎',
-                items: ['Manzana', 'Plátano', 'Naranja', 'Limón', 'Palta', 'Uvas']
+                items: ['Manzana', 'Plátano', 'Naranja', 'Limón', 'Frutilla', 'Uva', 'Pera','Sandía','Melón','Kiwi','Pomelo','Mango','Membrillo']
             },
-            grains: {
-                name: 'Cereales',
-                icon: '🌾',
-                items: ['Arroz', 'Fideos', 'Pan', 'Avena', 'Quinoa', 'Harina']
+            meat: {
+                name: 'Carnes',
+                icon: '🥩',
+                items: ['Pollo', 'Carne molida','Carne a la olla','Carne a la parrilla', 'Escalopa', 'Bistec', 'Cerdo', 'Pescado', 'Jamón', 'Salchichas','Salame','Pepinillos','Aceitunas']
             },
-            beverages: {
-                name: 'Bebidas',
-                icon: '🥤',
-                items: ['Agua', 'Jugo', 'Bebida', 'Café', 'Té', 'Cerveza']
-            },
-            cleaning: {
-                name: 'Limpieza',
-                icon: '🧽',
-                items: ['Detergente', 'Cloro', 'Jabón', 'Papel higiénico', 'Toallas papel', 'Desinfectante']
-            },
-            condimentos: {
-                name: 'Condimentos',
-                icon: '🧂',
-                items: ['Sal', 'Aceite', 'Vinagre', 'Ajo', 'Orégano', 'Mayonesa']
+            dairy: {
+                name: 'Lácteos',
+                icon: '🥛',
+                items: ['Leche', 'Queso', 'Yogurt', 'Mantequilla', 'Crema', 'Queso crema', 'Postres','Leche cultivada','Leche condensada','Leche evaporada','Manjar','Queso rallado','Huevos']
             },
             abarrotes: {
                 name: 'Abarrotes',
                 icon: '🏪',
-                items: ['Azúcar', 'Lenteja', 'Porotos', 'Atún', 'Conservas', 'Galletas']
+                items: ['Aceite', 'Sal', 'Azúcar', 'Harinas con/sin','Aceite de oliva','Aceto balsamico','Vinagre tinto','Vinagre de manzana','Ketchup','Mostaza','Mayonessa','Jalea en polvo','postres en polvo','Mermelada','Polvo de hornear','Maicena','Pan rayado','Pan de molde','Quezadillas,','Palmitos','Jurel','Atún','Durazno','Puré','Salsa de tomate','Cereal','Natur','Galletas','Chocolate margo','Chocolate dulce','Snacks','Sopas','Bases pollo crispy','Base pollo mediterranio','Base de cazuela','Endulzante', 'Ají en pasta','Dulce membrillo']
             },
+            
+            
+            grains: {
+                name: 'Cereales',
+                icon: '🌾',
+                items: ['Arroz', 'Pasta', 'Pan', 'Avena', 'Quinoa', 'Lentejas', 'Mote','Poroto','Garbanzo','Porotos granados','Lasagna']
+            },
+            condimentos: {
+                name: 'Condimentos',
+                icon: '🧂',
+                items: ['Ajo en polvo', 'Oregano','Romero','Papikra','Ají color','Cebolla en polvo', 'Sesamo','Curcuma','Merkén','Pimienta','Clavo de olor','Laurel','Canela','Calugas maggi','Jengibre en polvo','Nuez Moscada','Vainilla','Salsa soya','Salsa inglesa','Salsa de tabasco','Anís']
+            },
+            beverages: {
+                name: 'Bebidas',
+                icon: '🥤',
+                items: ['Agua', 'Jugo', 'Bebida', 'Café', 'Té', 'Vino', 'Cerveza','Tragos','Té papa','Aguas dani','Agua Bidon']
+            },
+            cleaning: {
+                name: 'Limpieza',
+                icon: '🧽',
+                items: ['Detergente', 'Cloro', 'Jabón', 'Papel higiénico', 'Shampoo', 'Pasta dental','Acondicionador','Quiz','Limpia vidrios','Crema de baño','Lustra mueble','Bolsa de basura','Esponja','Suavizante','Jabon en barra', 'Jabon liquido','Virutilla','Anti grasa','Escoba','Poett','Cepillo de diente','desodorante hombre','Desodorante mujer','Maquina de afeitar','Maquina de depilación','Crema de cara','Crema de cuerpo','Toallas higienicas','Nova','Servilletas']
+            },
+            
+            
             Javier: {
                 name: 'Javier',
                 icon: '👨',
-                items: ['Shampoo', 'Desodorante', 'Pasta dental', 'Jabón', 'Crema afeitar', 'Vitaminas']
+                items: ['Papitas fritas','Postres ricos','Bebidas','Chocolate','Nutella','Viajar a iquique','Mesada de 100mil']
             },
             Copito: {
                 name: 'Copito',
                 icon: '🐕',
-                items: ['Comida perro', 'Premios', 'Champú mascotas', 'Juguetes', 'Correa', 'Collar']
+                items: ['Comida','Snacks']
             }
         };
 
@@ -1478,10 +1482,10 @@
             
             if (connected) {
                 indicator.className = 'status-indicator';
-                status.textContent = 'Conectado a familia market!';
+                status.textContent = 'Conectado a family!';
             } else {
                 indicator.className = 'status-indicator disconnected';
-                status.textContent = 'Sin conexión';
+                status.textContent = 'Sin conexión a family :(';
             }
         }
 
